@@ -4,14 +4,15 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 
 import 'package:http/http.dart' as http;
-import './models/itunes_trend.dart';
+import '../models/itunes_trend.dart';
 
 class Trends with ChangeNotifier {
   List<Result> trendList = [];
-  String url =
-      'https://itunes.apple.com/search?term=podcast&genreId=1489&&limit=50';
+  String baseUrl =
+      'https://itunes.apple.com/search?term=podcast&limit=50&genreId=';
 
-  Future getTrends() async {
+  Future getTrends(String trendId) async {
+    String url = baseUrl + trendId;
     var result = await http.get(Uri.parse(url));
     var decoded = jsonDecode(result.body);
     var data = ItunesTrend.fromJson(decoded);

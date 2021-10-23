@@ -118,6 +118,7 @@ class Episode {
         artworkUrl60: json["artworkUrl60"],
         artworkUrl100: json['atworkUrl1100'],
         trackCount: json["trackCount"],
+        releaseDate: DateTime.parse(json["releaseDate"]),
         country: json["country"],
         primaryGenreName:
             json["primaryGenreName"] == null ? null : json["primaryGenreName"],
