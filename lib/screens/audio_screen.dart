@@ -47,7 +47,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
-    // _player.dispose();
+    _player.dispose();
     super.dispose();
   }
 
