@@ -22,14 +22,11 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance?.addObserver(this);
     super.initState();
     print('Init STTTAAAAAAAAAAAAATTTTE');
-    _player.stop;
+
     _init(widget.episode.episodeUrl!, widget.episode.trackName!);
   }
 
   Future<void> _init(String audioUrl, String audioTitle) async {
-    if (audioUrl.isEmpty) {
-      //'send a message'
-    }
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.speech());
     _player.playbackEventStream.listen((event) {},
@@ -50,7 +47,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
-    _player.dispose();
+    // _player.dispose();
     super.dispose();
   }
 
