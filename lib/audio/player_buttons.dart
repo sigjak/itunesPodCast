@@ -116,7 +116,7 @@ class PlayerButtons extends StatelessWidget {
         child: const CircularProgressIndicator(),
       );
     } else if (_audioPlayer.playing != true) {
-      if (episodeSelected) {}
+      // if (episodeSelected) {}
       return IconButton(
         icon: const Icon(Icons.play_arrow),
         iconSize: 64.0,

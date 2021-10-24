@@ -78,6 +78,7 @@ class _TrendScreenState extends State<TrendScreen> {
   bool isLoading = true;
   bool isEpisodes = false;
   bool isPlayer = false;
+
   late ScrollController _scrollController;
   late ScrollController _trendScrollController;
   @override
@@ -94,6 +95,7 @@ class _TrendScreenState extends State<TrendScreen> {
       setState(() {
         trendData = context.read<Trends>().trendList;
         isLoading = false;
+        isPlayer = true;
         trendName = name;
       });
     });
@@ -110,114 +112,117 @@ class _TrendScreenState extends State<TrendScreen> {
     _scrollController.dispose();
     _trendScrollController.dispose();
     super.dispose();
+    player.dispose();
   }
 
-  // String dateToString(DateTime dt) {
-  //   DateFormat dateFormat = DateFormat('dd-MM-yyyy');
-  //   return dateFormat.format(dt);
-  // }
-
   newPlayer() async {
-    if (player.playing) {
-      await player.stop();
-      await player.dispose();
-      player = AudioPlayer();
-    }
+    setState(() {
+      isPlayer = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(12.0),
-                    child: Text(
-                      'Trending',
-                      style: TextStyle(fontSize: 32, fontFamily: 'MonteCarlo'),
-                    ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Text(
+                    'Trending',
+                    style: TextStyle(fontSize: 32, fontFamily: 'MonteCarlo'),
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      toggleButtons(),
+                    ],
+                  ),
+                ),
+                Text(
+                  trendName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    height: 120,
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        toggleButtons(),
+                        Expanded(
+                          child: ListView.builder(
+                              controller: _trendScrollController,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: trendData.length,
+                              itemBuilder: (context, index) {
+                                final trend = trendData[index];
+                                return SizedBox(
+                                  width: 110,
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      _scrollController.hasClients
+                                          ? _scrollController.animateTo(0,
+                                              duration:
+                                                  const Duration(seconds: 2),
+                                              curve: Curves.easeInOutCubic)
+                                          : '';
+
+                                      await context
+                                          .read<ItunesEpisodes>()
+                                          .getEpisodes(
+                                              trend.collectionId.toString());
+                                      setState(() {
+                                        isEpisodes = true;
+                                      });
+                                    },
+                                    child: Image(
+                                      image: NetworkImage(trend.artworkUrl100!),
+                                    ),
+                                  ),
+                                );
+                              }),
+                        )
                       ],
                     ),
                   ),
-                  Text(
-                    trendName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      height: 120,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: ListView.builder(
-                                controller: _trendScrollController,
-                                scrollDirection: Axis.horizontal,
-                                itemCount: trendData.length,
-                                itemBuilder: (context, index) {
-                                  final trend = trendData[index];
-                                  return SizedBox(
-                                    width: 110,
-                                    child: GestureDetector(
-                                      onTap: () async {
-                                        _scrollController.hasClients
-                                            ? _scrollController.animateTo(0,
-                                                duration:
-                                                    const Duration(seconds: 2),
-                                                curve: Curves.easeInOutCubic)
-                                            : '';
-
-                                        await context
-                                            .read<ItunesEpisodes>()
-                                            .getEpisodes(
-                                                trend.collectionId.toString());
-                                        setState(() {
-                                          isEpisodes = true;
-                                        });
-                                      },
-                                      child: Image(
-                                        image:
-                                            NetworkImage(trend.artworkUrl100!),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                      onPressed: () async {
-                        print(player.playerState);
-                        if (player.playing) {
-                          await player.stop();
-                        }
-                      },
-                      child: const Text('Stop Player')),
-                  isEpisodes
-                      ? Expanded(
-                          child: EpisodesWidget(
-                              scrollController: _scrollController,
-                              episodes: episodes,
-                              player: player,
-                              newPlayer: newPlayer),
-                        )
-                      : const Text('')
-                ],
-              ));
+                ),
+                isPlayer
+                    ? Align(
+                        alignment: Alignment.topLeft,
+                        child: TextButton(
+                            onPressed: () async {
+                              print(player.playerState);
+                              if (player.playing) {
+                                await player.stop();
+                                // await player.dispose();
+                                setState(() {
+                                  isPlayer = false;
+                                });
+                              }
+                            },
+                            child: const Text('Stop Player')),
+                      )
+                    : const SizedBox(),
+                isEpisodes
+                    ? Expanded(
+                        child: EpisodesWidget(
+                            scrollController: _scrollController,
+                            episodes: episodes,
+                            player: player,
+                            newPlayer: newPlayer),
+                      )
+                    : const Text('')
+              ],
+            ),
+    );
   }
 
   ToggleButtons toggleButtons() {
@@ -303,7 +308,8 @@ class EpisodesWidget extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () {
                       // print(episode.episodeUrl);
-                      newPlayer;
+                      print('nnn');
+                      newPlayer();
                       Navigator.push(
                         context,
                         MaterialPageRoute(

@@ -33,17 +33,44 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     await session.configure(const AudioSessionConfiguration.speech());
     widget.player.playbackEventStream.listen((event) {},
         onError: (Object e, StackTrace stackTrace) {
-      print('A stream error ocurred: $e');
+      ScaffoldMessenger.of(context).showSnackBar(snack('Stream error!'));
     });
 
     try {
-      var audioSource = AudioSource.uri(Uri.parse(audioUrl),
-          tag: MediaItem(id: '1', album: 'ssome data', title: audioTitle));
+      print(widget.episode.collectionName);
+      AudioSource audioSource = AudioSource.uri(Uri.parse(audioUrl),
+          tag: MediaItem(
+              id: '1',
+              album: widget.episode.collectionName,
+              title: audioTitle));
       await widget.player.setAudioSource(audioSource);
       widget.player.play();
     } catch (e) {
-      print(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        snack('Error loading audio'),
+      );
     }
+  }
+
+  SnackBar snack(String errorText) {
+    return SnackBar(
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(16),
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          const Icon(
+            Icons.error,
+            size: 42,
+            color: Colors.red,
+          ),
+          Text(
+            errorText,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -69,10 +96,25 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text('Title'),
       ),
-      body: Container(
-          child: Image(
-        image: NetworkImage(widget.episode.artworkUrl600!),
-      )),
+      body: Column(
+        children: [
+          Image(
+            image: NetworkImage(widget.episode.artworkUrl600!, scale: 2),
+          ),
+          PlayerButtons(widget.player, true, context),
+          StreamBuilder<PositionData>(
+              stream: _positionDataStream,
+              builder: (context, snapshot) {
+                final positionData = snapshot.data;
+                return SliderBar(
+                    audioPlayer: widget.player,
+                    duration: positionData?.duration ?? Duration.zero,
+                    position: positionData?.position ?? Duration.zero,
+                    bufferedPosition:
+                        positionData?.bufferedPosition ?? Duration.zero);
+              }),
+        ],
+      ),
     );
   }
 }
