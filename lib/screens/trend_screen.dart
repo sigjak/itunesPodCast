@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:just_audio/just_audio.dart';
 import '../models/itunes_trend.dart';
 import '../models/itunes_episodes.dart';
 import '../providers/trend_provider.dart';
@@ -16,6 +17,7 @@ class TrendScreen extends StatefulWidget {
 }
 
 class _TrendScreenState extends State<TrendScreen> {
+  AudioPlayer player = AudioPlayer();
   List<Result> trendData = [];
   List<Episode> episodes = [];
   List<String> categoryList = [
@@ -110,9 +112,17 @@ class _TrendScreenState extends State<TrendScreen> {
     super.dispose();
   }
 
-  String dateToString(DateTime dt) {
-    DateFormat dateFormat = DateFormat('dd-MM-yyyy');
-    return dateFormat.format(dt);
+  // String dateToString(DateTime dt) {
+  //   DateFormat dateFormat = DateFormat('dd-MM-yyyy');
+  //   return dateFormat.format(dt);
+  // }
+
+  newPlayer() async {
+    if (player.playing) {
+      await player.stop();
+      await player.dispose();
+      player = AudioPlayer();
+    }
   }
 
   @override
@@ -189,73 +199,21 @@ class _TrendScreenState extends State<TrendScreen> {
                       ),
                     ),
                   ),
+                  TextButton(
+                      onPressed: () async {
+                        print(player.playerState);
+                        if (player.playing) {
+                          await player.stop();
+                        }
+                      },
+                      child: const Text('Stop Player')),
                   isEpisodes
                       ? Expanded(
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            itemCount: episodes.length,
-                            itemBuilder: (context, index) {
-                              final episode = episodes[index];
-
-                              return index == 0
-                                  ? Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 20.0),
-                                      child: Text(
-                                        episode.trackName ?? '',
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                        ),
-                                      ),
-                                    )
-                                  : Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          20, 5, 20, 5),
-                                      child: Container(
-                                        height: 150,
-                                        decoration: BoxDecoration(
-                                            border: Border.all(width: 1)),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            print(episode.episodeUrl);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    AudioScreen(
-                                                        episode: episode),
-                                              ),
-                                            );
-                                          },
-                                          child: Card(
-                                            elevation: 5,
-                                            child: SingleChildScrollView(
-                                              child: ListTile(
-                                                title: RichText(
-                                                    text: TextSpan(
-                                                        text:
-                                                            episode.trackName ??
-                                                                '',
-                                                        children: [
-                                                      TextSpan(
-                                                          text:
-                                                              '  ${dateToString(episode.releaseDate ?? DateTime.now())}',
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 8))
-                                                    ])),
-                                                subtitle: Text(
-                                                    episode.description ?? ''),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                            },
-                          ),
+                          child: EpisodesWidget(
+                              scrollController: _scrollController,
+                              episodes: episodes,
+                              player: player,
+                              newPlayer: newPlayer),
                         )
                       : const Text('')
                 ],
@@ -298,77 +256,83 @@ class _TrendScreenState extends State<TrendScreen> {
   }
 }
 
-// class EpisodeWidget extends StatelessWidget {
-//   const EpisodeWidget({
-//     Key? key,
-//     required ScrollController scrollController,
-//     required this.episodes,
-//   })  : _scrollController = scrollController,
-//         super(key: key);
+class EpisodesWidget extends StatelessWidget {
+  const EpisodesWidget(
+      {Key? key,
+      required ScrollController scrollController,
+      required this.episodes,
+      required this.player,
+      required this.newPlayer})
+      : _scrollController = scrollController,
+        super(key: key);
 
-//   final ScrollController _scrollController;
-//   final List<Episode> episodes;
-//   String dateToString(DateTime dt) {
-//     DateFormat dateFormat = DateFormat('dd-MM-yyyy');
-//     return dateFormat.format(dt);
-//   }
+  final ScrollController _scrollController;
+  final List<Episode> episodes;
+  final AudioPlayer player;
+  final Function newPlayer;
+  String dateToString(DateTime dt) {
+    DateFormat dateFormat = DateFormat('dd-MM-yyyy');
+    return dateFormat.format(dt);
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return ListView.builder(
-//       controller: _scrollController,
-//       itemCount: episodes.length,
-//       itemBuilder: (context, index) {
-//         final episode = episodes[index];
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: episodes.length,
+      itemBuilder: (context, index) {
+        final episode = episodes[index];
 
-//         return index == 0
-//             ? Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-//                 child: Text(
-//                   episode.trackName ?? '',
-//                   textAlign: TextAlign.center,
-//                   maxLines: 1,
-//                   style: const TextStyle(
-//                     fontSize: 20,
-//                   ),
-//                 ),
-//               )
-//             : Padding(
-//                 padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-//                 child: Container(
-//                   height: 150,
-//                   decoration: BoxDecoration(border: Border.all(width: 1)),
-//                   child: GestureDetector(
-//                     onTap: () {
-//                       print(episode.episodeUrl);
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                           builder: (context) => AudioScreen(episode: episode),
-//                         ),
-//                       );
-//                     },
-//                     child: Card(
-//                       elevation: 5,
-//                       child: SingleChildScrollView(
-//                         child: ListTile(
-//                           title: RichText(
-//                               text: TextSpan(
-//                                   text: episode.trackName ?? '',
-//                                   children: [
-//                                 TextSpan(
-//                                     text:
-//                                         '  ${dateToString(episode.releaseDate ?? DateTime.now())}',
-//                                     style: const TextStyle(fontSize: 8))
-//                               ])),
-//                           subtitle: Text(episode.description ?? ''),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               );
-//       },
-//     );
-//   }
-// }
+        return index == 0
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  episode.trackName ?? '',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                child: Container(
+                  height: 150,
+                  decoration: BoxDecoration(border: Border.all(width: 1)),
+                  child: GestureDetector(
+                    onTap: () {
+                      // print(episode.episodeUrl);
+                      newPlayer;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AudioScreen(episode: episode, player: player),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 5,
+                      child: SingleChildScrollView(
+                        child: ListTile(
+                          title: RichText(
+                              text: TextSpan(
+                                  text: episode.trackName ?? '',
+                                  children: [
+                                TextSpan(
+                                    text:
+                                        '  ${dateToString(episode.releaseDate ?? DateTime.now())}',
+                                    style: const TextStyle(fontSize: 8))
+                              ])),
+                          subtitle: Text(episode.description ?? ''),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+      },
+    );
+  }
+}

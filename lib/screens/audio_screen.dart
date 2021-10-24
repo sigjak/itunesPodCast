@@ -8,14 +8,16 @@ import 'package:audio_session/audio_session.dart';
 import 'package:rxdart/rxdart.dart';
 
 class AudioScreen extends StatefulWidget {
-  const AudioScreen({required this.episode, Key? key}) : super(key: key);
+  const AudioScreen({required this.episode, required this.player, Key? key})
+      : super(key: key);
   final Episode episode;
+  final AudioPlayer player;
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
 
 class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
-  final AudioPlayer _player = AudioPlayer();
+  //final AudioPlayer widget.player = AudioPlayer();
 
   @override
   void initState() {
@@ -29,7 +31,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   Future<void> _init(String audioUrl, String audioTitle) async {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.speech());
-    _player.playbackEventStream.listen((event) {},
+    widget.player.playbackEventStream.listen((event) {},
         onError: (Object e, StackTrace stackTrace) {
       print('A stream error ocurred: $e');
     });
@@ -37,8 +39,8 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     try {
       var audioSource = AudioSource.uri(Uri.parse(audioUrl),
           tag: MediaItem(id: '1', album: 'ssome data', title: audioTitle));
-      await _player.setAudioSource(audioSource);
-      _player.play();
+      await widget.player.setAudioSource(audioSource);
+      widget.player.play();
     } catch (e) {
       print(e.toString());
     }
@@ -47,7 +49,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
-    _player.dispose();
+    //widget.player.dispose();
     super.dispose();
   }
 
@@ -55,9 +57,9 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   /// feature of rx_dart to combine the 3 streams of interest into one.
   Stream<PositionData> get _positionDataStream =>
       Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-          _player.positionStream,
-          _player.bufferedPositionStream,
-          _player.durationStream,
+          widget.player.positionStream,
+          widget.player.bufferedPositionStream,
+          widget.player.durationStream,
           (position, bufferedPosition, duration) => PositionData(
               position, bufferedPosition, duration ?? Duration.zero));
 
