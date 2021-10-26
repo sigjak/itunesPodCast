@@ -15,8 +15,11 @@ class ItunesEpisodes with ChangeNotifier {
     final result = await http.get(Uri.parse(url));
     final decoded = jsonDecode(result.body);
     var res = Episodes.fromJson(decoded);
-    print(res.results![1].releaseDate ?? 'error');
-    // print(res.results![1].episodeUrl);
+    // print(res.results![1].releaseDate ?? 'error');
+    // print(res.results![1].artistName ?? 'error');
+    // print(res.results![1].collectionName ?? 'error');
+    // print(res.results![1].shortDescription ?? 'error');
+    // // print(res.results![1].episodeUrl);
     // print(res.results![1].description);
     // print('ResultCount: ${res.resultCount}');
     episodeList = [...res.results!];

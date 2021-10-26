@@ -307,8 +307,6 @@ class EpisodesWidget extends StatelessWidget {
                   decoration: BoxDecoration(border: Border.all(width: 1)),
                   child: GestureDetector(
                     onTap: () {
-                      // print(episode.episodeUrl);
-                      print('nnn');
                       newPlayer();
                       Navigator.push(
                         context,
