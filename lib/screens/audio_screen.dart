@@ -171,27 +171,28 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                               alignment: Alignment.bottomLeft,
                               child: TextButton(
                                   onPressed: () async {
+                                    await saveEpisode(episode);
                                     //Check if Podcast in favorites, if not save to favorites
-                                    bool check =
-                                        await podcastSql.checkIfPodcastInDB(
-                                            episode.collectionName!);
-                                    if (!check) {
-                                      PodFavorite pod = PodFavorite(
-                                        podcastName: episode.collectionName!,
-                                        podcastImage: episode.artworkUrl600!,
-                                        podcastFeed: episode.collectionId!,
-                                      );
-                                      await podcastSql.addPodcast(pod);
-                                    }
-                                    // now save episode to location
+                                    // bool check =
+                                    //     await podcastSql.checkIfPodcastInDB(
+                                    //         episode.collectionName!);
+                                    // if (!check) {
+                                    //   PodFavorite pod = PodFavorite(
+                                    //     podcastName: episode.collectionName!,
+                                    //     podcastImage: episode.artworkUrl600!,
+                                    //     podcastFeed: episode.collectionId!,
+                                    //   );
+                                    //   await podcastSql.addPodcast(pod);
+                                    // }
+                                    // // now save episode to location
 
-                                    String dloadLocation = await context
-                                        .read<SaveService>()
-                                        .saveEpisode(
-                                            episode.episodeUrl!,
-                                            episode.collectionName!,
-                                            episode.trackName!);
-                                    print('Saved in location: $dloadLocation');
+                                    // String dloadLocation = await context
+                                    //     .read<SaveService>()
+                                    //     .saveEpisode(
+                                    //         episode.episodeUrl!,
+                                    //         episode.collectionName!,
+                                    //         episode.trackName!);
+                                    // print('Saved in location: $dloadLocation');
                                     // EpisFavorite favToSave = EpisFavorite(
                                     //   podcastName: episode.collectionName!,
                                     //   episodeName: episode.trackName!,
@@ -216,5 +217,23 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  Future<void> saveEpisode(episode) async {
+    var podcastSql = context.read<PodcastServices>();
+    bool check = await podcastSql.checkIfPodcastInDB(episode.collectionName!);
+    if (!check) {
+      PodFavorite pod = PodFavorite(
+        podcastName: episode.collectionName!,
+        podcastImage: episode.artworkUrl600!,
+        podcastFeed: episode.collectionId!,
+      );
+      await podcastSql.addPodcast(pod);
+    }
+    // now save episode to location
+
+    String dloadLocation = await context.read<SaveService>().saveEpisode(
+        episode.episodeUrl!, episode.collectionName!, episode.trackName!);
+    print('Saved in location: $dloadLocation');
   }
 }
