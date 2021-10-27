@@ -7,6 +7,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 import 'package:provider/provider.dart';
 import '../sql/podcast_sql_services.dart';
 import '../models/itunes_episodes.dart';
@@ -26,6 +27,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   List<Episode> episodes = [];
   bool isSelected = false;
   int? tappedIndex;
+
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
@@ -43,7 +45,8 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     await session.configure(const AudioSessionConfiguration.speech());
     widget.player.playbackEventStream.listen((event) {},
         onError: (Object e, StackTrace stackTrace) {
-      ScaffoldMessenger.of(context).showSnackBar(snack('Stream error!'));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snack(Icons.error, 'Stream error!'));
     });
 
     try {
@@ -56,26 +59,26 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
       widget.player.play();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        snack('Error loading audio'),
+        snack(Icons.error, 'Error loading audio'),
       );
     }
   }
 
-  SnackBar snack(String errorText) {
+  SnackBar snack(IconData messIcon, String errorText) {
     return SnackBar(
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
       content: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          const Icon(
-            Icons.error,
-            size: 42,
+          Icon(
+            messIcon,
+            size: 50,
             color: Colors.red,
           ),
           Text(
             errorText,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           )
         ],
       ),
@@ -100,12 +103,18 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
               position, bufferedPosition, duration ?? Duration.zero));
   String dateToString(DateTime dt) {
     DateFormat dateFormat = DateFormat('dd-MM-yyyy');
-    return dateFormat.format(dt);
+    return 'Release date: ${dateFormat.format(dt)}';
+  }
+
+  String totime(int ms) {
+    Duration dur = Duration(milliseconds: ms);
+    String durString = dur.toString();
+    List<String> splDur = durString.split('.');
+    return 'Duration: ${splDur[0]}';
   }
 
   @override
   Widget build(BuildContext context) {
-    var podcastSql = context.read<PodcastServices>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Title'),
@@ -142,7 +151,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                         border: Border.all(
                           width: 1,
                           color:
-                              tappedIndex == index ? Colors.red : Colors.grey,
+                              tappedIndex == index ? Colors.white : Colors.grey,
                         ),
                       ),
                       child: SingleChildScrollView(
@@ -153,61 +162,65 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                 isSelected = false;
                                 tappedIndex = index;
                               });
-                              // _init(episode.episodeUrl!, episode.trackName!);
+                              _init(episode.episodeUrl!, episode.trackName!);
                             },
                             child: Column(
                               children: [
-                                Text(episode.trackName!),
-                                Text(
-                                  dateToString(
-                                      episode.releaseDate ?? DateTime.now()),
-                                  style: const TextStyle(fontSize: 9),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(episode.trackName!),
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      dateToString(episode.releaseDate ??
+                                          DateTime.now()),
+                                      style: const TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      totime(episode.trackTimeMillis ?? 0),
+                                      style: const TextStyle(fontSize: 9),
+                                    )
+                                  ],
                                 ),
                                 Text(episode.description ?? ''),
                               ],
                             ),
                           ),
                           Align(
-                              alignment: Alignment.bottomLeft,
-                              child: TextButton(
-                                  onPressed: () async {
-                                    await saveEpisode(episode);
-                                    //Check if Podcast in favorites, if not save to favorites
-                                    // bool check =
-                                    //     await podcastSql.checkIfPodcastInDB(
-                                    //         episode.collectionName!);
-                                    // if (!check) {
-                                    //   PodFavorite pod = PodFavorite(
-                                    //     podcastName: episode.collectionName!,
-                                    //     podcastImage: episode.artworkUrl600!,
-                                    //     podcastFeed: episode.collectionId!,
-                                    //   );
-                                    //   await podcastSql.addPodcast(pod);
-                                    // }
-                                    // // now save episode to location
-
-                                    // String dloadLocation = await context
-                                    //     .read<SaveService>()
-                                    //     .saveEpisode(
-                                    //         episode.episodeUrl!,
-                                    //         episode.collectionName!,
-                                    //         episode.trackName!);
-                                    // print('Saved in location: $dloadLocation');
-                                    // EpisFavorite favToSave = EpisFavorite(
-                                    //   podcastName: episode.collectionName!,
-                                    //   episodeName: episode.trackName!,
-                                    //   episodeUrl: episode.episodeUrl!,
-                                    //   episodeDate: episode.releaseDate!
-                                    //       .toIso8601String(),
-                                    //   episodeDescription: episode.description!,
-                                    //   timestamp:
-                                    //       DateTime.now().microsecondsSinceEpoch,
-                                    //   position: widget.player.position,
-                                    //   dloadLocation: 'dloadlocation',
-                                    // );
-                                    // adding to sql databasse
-                                  },
-                                  child: const Text('Save Episode')))
+                            alignment: Alignment.bottomLeft,
+                            child: TextButton(
+                                onPressed: () async {
+                                  showDloadIndicator(context, episode);
+                                  await saveEpisode(episode);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Save Episode')),
+                          ),
+                          ElevatedButton(
+                              onPressed: () async {
+                                await context
+                                    .read<SaveService>()
+                                    .getEpisodesInDirectory(
+                                        episode.collectionName!);
+                                var rr = await context
+                                    .read<PodcastServices>()
+                                    .getSingleEpisode(episode.trackName!);
+                                print(rr.episodeDuration);
+                                // File fileToDelete = File(rr.dloadLocation!);
+                                // if (fileToDelete.existsSync()) {
+                                //   fileToDelete.delete();
+                                //   print('file deleted');
+                                // } else {
+                                //   print('no such file');
+                                // }
+                                // await context
+                                //     .read<PodcastServices>()
+                                //     .deleteSavedEpisode(rr.dloadLocation!);
+                              },
+                              child: Text('dededed'))
                         ]),
                       ),
                     ),
@@ -219,7 +232,51 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     );
   }
 
+  Future<dynamic> showDloadIndicator(BuildContext context, Episode episode) {
+    return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          //dialogContext = context;
+          return AlertDialog(
+            title: const Text('Downloading...'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LinearProgressIndicator(
+                    value: context.watch<SaveService>().progress),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('please wait...'),
+                ),
+                TextButton(
+                    onPressed: () async {
+                      context.read<SaveService>().token.cancel('cancelled');
+                      String dloadLocation = await context
+                          .read<SaveService>()
+                          .downloadLocation(
+                              episode.collectionName!, episode.trackName);
+
+                      //clean sql of episode
+                      await context
+                          .read<PodcastServices>()
+                          .deleteSavedEpisode('dummy');
+                      File fileToDelete = File(dloadLocation);
+                      if (fileToDelete.existsSync()) {
+                        fileToDelete.deleteSync();
+                      }
+                      context.read<SaveService>().progress = 0.0;
+                      Navigator.of(context, rootNavigator: true).pop();
+                    },
+                    child: const Text('Cancel'))
+              ],
+            ),
+          );
+        });
+  }
+
   Future<void> saveEpisode(episode) async {
+    context.read<SaveService>().refreshToken();
     var podcastSql = context.read<PodcastServices>();
     bool check = await podcastSql.checkIfPodcastInDB(episode.collectionName!);
     if (!check) {
@@ -232,8 +289,25 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     }
     // now save episode to location
 
-    String dloadLocation = await context.read<SaveService>().saveEpisode(
-        episode.episodeUrl!, episode.collectionName!, episode.trackName!);
-    print('Saved in location: $dloadLocation');
+    EpisFavorite favToSave = EpisFavorite(
+      podcastName: episode.collectionName!,
+      episodeName: episode.trackName!,
+      episodeUrl: episode.episodeUrl!,
+      episodeDuration: episode.trackTimeMillis!,
+      episodeDate: episode.releaseDate!.toIso8601String(),
+      episodeDescription: episode.description!,
+      timestamp: DateTime.now().microsecondsSinceEpoch,
+      position: widget.player.position,
+      dloadLocation: 'dummy',
+    );
+    String result = await podcastSql.addFavoriteEpisode(favToSave);
+    if (result == 'Episode added') {
+      String dloadlocation = await context.read<SaveService>().saveEpisode(
+          episode.episodeUrl, episode.collectionName, episode.trackName);
+      await podcastSql.updateSaveLocation(dloadlocation, episode.trackName);
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(snack(Icons.check, 'Already in database'));
+    }
   }
 }

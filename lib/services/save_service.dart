@@ -9,6 +9,13 @@ class SaveService with ChangeNotifier {
   String? podcastName;
   String? episodeName;
   double? progress = 0.0;
+  CancelToken token = CancelToken();
+
+  void refreshToken() {
+    if (token.isCancelled) {
+      token = CancelToken();
+    }
+  }
 
   ////      get sd card
   //
@@ -45,33 +52,45 @@ class SaveService with ChangeNotifier {
     }
   }
 
+  Future<String> downloadLocation(String podcastName, episodeTitle) async {
+    String cleanTitle =
+        episodeTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
+    String cleanerTitle = cleanTitle.replaceAll(RegExp('\\s+'), '');
+    String fileName = cleanerTitle.substring(0, min(cleanerTitle.length, 20));
+    String dirPath = await getDirPath(podcastName);
+    final savePath = dirPath + '/$fileName.mp3';
+    return savePath;
+  }
+
   Future<String> saveEpisode(
       String urlPath, String podcastName, String episodeTitle) async {
     Dio dio = Dio();
-
-    String cleanTitle =
-        episodeTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
-
-    String cleanerTitle = cleanTitle.replaceAll(RegExp('\\s+'), '');
-    String fileName = cleanerTitle.substring(0, min(cleanerTitle.length, 20));
-
-    String dirPath = await getDirPath(podcastName);
-    final savePath = dirPath + '/$fileName.mp3';
+    final savePath = await downloadLocation(podcastName, episodeTitle);
 
     try {
-      await dio.download(urlPath, savePath,
+      await dio.download(urlPath, savePath, cancelToken: token,
           onReceiveProgress: (downloaded, totalsize) {
         progress = downloaded / totalsize;
         notifyListeners();
-        print(progress);
+        //print(progress);
       });
       progress = 0.0;
       notifyListeners();
-      print('downloaded');
+      // print('downloaded');
       return savePath;
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
       throw Exception('problems');
     }
+  }
+
+  Future getEpisodesInDirectory(String podcastName) async {
+    String path = await getDirPath(podcastName);
+    //print(path);
+
+    Directory dir = Directory(path);
+    dir.list(recursive: false).forEach((element) {
+      print(element);
+    });
   }
 }

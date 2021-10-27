@@ -27,6 +27,7 @@ class PodFavDatabase {
     ${EpisodeFavFields.episodeName} $textType,
     ${EpisodeFavFields.episodeUrl} $textType,
     ${EpisodeFavFields.episodeDate} $textType,
+    ${EpisodeFavFields.episodeDuration} $integer,
     ${EpisodeFavFields.episodeDescription} $textType,
     ${EpisodeFavFields.timestamp} $integer,
     ${EpisodeFavFields.position} $integer,
@@ -160,6 +161,16 @@ class PodFavDatabase {
         'UPDATE favoriteEpisodesTable SET dloadLocation = ? WHERE episodeName = ?',
         [downloadLocation, episodename]);
     return result;
+  }
+
+  Future getSingleNamedEpisode(String episodename) async {
+    final db = await instance.database;
+    final result = await db!.query(favoriteEpisodesTable,
+        where: '${EpisodeFavFields.episodeName} =?', whereArgs: [episodename]);
+    List<EpisFavorite> epList =
+        result.map((e) => EpisFavorite.fromJson(e)).toList();
+    EpisFavorite one = epList[0];
+    return one;
   }
 
 //////////////////

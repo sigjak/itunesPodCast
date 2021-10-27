@@ -1,5 +1,7 @@
 // ignore_for_file: unnecessary_this, prefer_adjacent_string_concatenation
 
+import 'package:itunes_pod/models/itunes_episodes.dart';
+
 const String favoriteEpisodesTable = 'favoriteEpisodesTable';
 
 class EpisodeFavFields {
@@ -8,6 +10,7 @@ class EpisodeFavFields {
   static const String episodeName = 'episodeName';
   static const String episodeUrl = 'episodeUrl';
   static const String episodeDate = 'episodeDate';
+  static const String episodeDuration = 'episodeDuration';
   static const String episodeDescription = 'episodeDescription';
   static const String timestamp = 'timestamp';
   static const String position = 'position';
@@ -34,6 +37,7 @@ class EpisFavorite {
   String episodeName;
   String episodeDate;
   String episodeUrl;
+  int episodeDuration;
   String episodeDescription;
   int timestamp;
   Duration? position;
@@ -46,6 +50,7 @@ class EpisFavorite {
       required this.episodeName,
       required this.episodeUrl,
       required this.episodeDate,
+      required this.episodeDuration,
       required this.episodeDescription,
       required this.timestamp,
       this.position,
@@ -58,6 +63,7 @@ class EpisFavorite {
         EpisodeFavFields.episodeName: episodeName,
         EpisodeFavFields.episodeUrl: episodeUrl,
         EpisodeFavFields.episodeDate: episodeDate,
+        EpisodeFavFields.episodeDuration: episodeDuration,
         EpisodeFavFields.episodeDescription: episodeDescription,
         EpisodeFavFields.timestamp: timestamp,
         EpisodeFavFields.position:
@@ -72,6 +78,7 @@ class EpisFavorite {
       episodeName: json[EpisodeFavFields.episodeName] as String,
       episodeUrl: json[EpisodeFavFields.episodeUrl] as String,
       episodeDate: json[EpisodeFavFields.episodeDate] as String,
+      episodeDuration: json[EpisodeFavFields.episodeDuration] as int,
       episodeDescription: json[EpisodeFavFields.episodeDescription] as String,
       timestamp: json[EpisodeFavFields.timestamp] as int,
       position: Duration(milliseconds: json[EpisodeFavFields.position]),
@@ -96,6 +103,7 @@ class EpisFavorite {
             '${EpisodeFavFields.episodeName}: $episodeName\n'
             '${EpisodeFavFields.episodeUrl}: $episodeUrl\n'
             '${EpisodeFavFields.episodeDate}: $episodeDate\n' +
+        '${EpisodeFavFields.episodeDuration}: $episodeDuration\n' +
         '${EpisodeFavFields.episodeDescription}: $episodeDescription\n,' +
         '${EpisodeFavFields.timestamp}: $timestamp\n,' +
         '${EpisodeFavFields.isDownloaded}: $isDownloaded\n' +

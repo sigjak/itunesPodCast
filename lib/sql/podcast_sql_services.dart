@@ -108,6 +108,18 @@ class PodcastServices with ChangeNotifier {
     return result;
   }
 
+  Future<EpisFavorite> getSingleEpisode(String episodename) async {
+    EpisFavorite? singleEpisode;
+    try {
+      singleEpisode =
+          await PodFavDatabase.instance.getSingleNamedEpisode(episodename);
+      //return singleEpisode!;
+    } catch (e) {
+      print('ERROR No such episode in favorites');
+    }
+    return singleEpisode!;
+  }
+
 ////////////////////////////////////////////
   // get all episoded from a single podcast
   ///////
