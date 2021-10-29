@@ -1,7 +1,5 @@
 // ignore_for_file: unnecessary_this, prefer_adjacent_string_concatenation
 
-import 'package:itunes_pod/models/itunes_episodes.dart';
-
 const String favoriteEpisodesTable = 'favoriteEpisodesTable';
 
 class EpisodeFavFields {

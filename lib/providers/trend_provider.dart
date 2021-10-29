@@ -14,11 +14,12 @@ class Trends with ChangeNotifier {
   Future getTrends(String trendId) async {
     String url = baseUrl + trendId;
     var result = await http.get(Uri.parse(url));
-    var decoded = jsonDecode(result.body);
-    var data = ItunesTrend.fromJson(decoded);
+    if (result.statusCode == 200) {
+      var decoded = jsonDecode(result.body);
+      var data = ItunesTrend.fromJson(decoded);
+      trendList = [...data.results!];
+    }
 
-    trendList = [...data.results!];
-    print(trendList[0].artistId);
     notifyListeners();
     // for (var data in trendList) {
     //   print(data.collectionName);

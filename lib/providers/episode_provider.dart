@@ -13,16 +13,12 @@ class ItunesEpisodes with ChangeNotifier {
     String addUrl = '&country=US&media=podcast&entity=podcastEpisode&limit=20';
     String url = baseUrl + addUrl;
     final result = await http.get(Uri.parse(url));
-    final decoded = jsonDecode(result.body);
-    var res = Episodes.fromJson(decoded);
-    // print(res.results![1].releaseDate ?? 'error');
-    // print(res.results![1].artistName ?? 'error');
-    // print(res.results![1].collectionName ?? 'error');
-    // print(res.results![1].shortDescription ?? 'error');
-    // // print(res.results![1].episodeUrl);
-    // print(res.results![1].description);
-    // print('ResultCount: ${res.resultCount}');
-    episodeList = [...res.results!];
+    if (result.statusCode == 200) {
+      final decoded = jsonDecode(result.body);
+      var res = Episodes.fromJson(decoded);
+      episodeList = [...res.results!];
+    }
+
     notifyListeners();
   }
 }

@@ -95,7 +95,7 @@ class _TrendScreenState extends State<TrendScreen> {
       setState(() {
         trendData = context.read<Trends>().trendList;
         isLoading = false;
-        isPlayer = true;
+        isPlayer = false;
         trendName = name;
       });
     });
@@ -199,6 +199,7 @@ class _TrendScreenState extends State<TrendScreen> {
                         alignment: Alignment.topLeft,
                         child: TextButton(
                             onPressed: () async {
+                              print(isPlayer);
                               print(player.playerState);
                               if (player.playing) {
                                 await player.stop();
@@ -280,6 +281,13 @@ class EpisodesWidget extends StatelessWidget {
     return dateFormat.format(dt);
   }
 
+  String totime(int ms) {
+    Duration dur = Duration(milliseconds: ms);
+    String durString = dur.toString();
+    List<String> splDur = durString.split('.');
+    return 'Duration: ${splDur[0]}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -301,7 +309,7 @@ class EpisodesWidget extends StatelessWidget {
                 ),
               )
             : Padding(
-                padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 2),
                 child: Container(
                   height: 150,
                   decoration: BoxDecoration(border: Border.all(width: 1)),
@@ -319,17 +327,32 @@ class EpisodesWidget extends StatelessWidget {
                     child: Card(
                       elevation: 5,
                       child: SingleChildScrollView(
-                        child: ListTile(
-                          title: RichText(
-                              text: TextSpan(
-                                  text: episode.trackName ?? '',
-                                  children: [
-                                TextSpan(
-                                    text:
-                                        '  ${dateToString(episode.releaseDate ?? DateTime.now())}',
-                                    style: const TextStyle(fontSize: 8))
-                              ])),
-                          subtitle: Text(episode.description ?? ''),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Text(episode.trackName!),
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    dateToString(
+                                        episode.releaseDate ?? DateTime.now()),
+                                    style: const TextStyle(fontSize: 9),
+                                  ),
+                                  Text(
+                                    totime(episode.trackTimeMillis ?? 0),
+                                    style: const TextStyle(fontSize: 9),
+                                  )
+                                ],
+                              ),
+                              Text(episode.description ?? ''),
+                            ],
+                          ),
                         ),
                       ),
                     ),
