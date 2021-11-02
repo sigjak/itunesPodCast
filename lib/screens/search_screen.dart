@@ -12,20 +12,18 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  String searchText = 'fresh+air';
+  // String searchText = 'fresh+air';
   bool startSearch = false;
 
   List<PodResult> dataSearch = [];
 
-  @override
-  void initState() {
-    context.read<SearchByName>().nameSearch(searchText).then((_) {
+  Future initSearch(searchText) async {
+    await context.read<SearchByName>().nameSearch(searchText).then((_) {
       setState(() {
         dataSearch = context.read<SearchByName>().searches;
         startSearch = true;
       });
     });
-    super.initState();
   }
 
   static String stripHtmlIfNeeded(String text) {
@@ -41,10 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Column(children: [
         ElevatedButton(
           onPressed: () {
-            setState(() {
-              searchText = 'this+american+life';
-              startSearch = true;
-            });
+            initSearch('wait+wait');
           },
           child: const Text('Search'),
         ),

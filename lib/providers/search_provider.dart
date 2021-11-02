@@ -9,7 +9,7 @@ import 'dart:convert';
 
 class SearchByName with ChangeNotifier {
   List<PodResult> searches = [];
-  Future<List<PodResult>> nameSearch(String searchTerm) async {
+  Future<void> nameSearch(String searchTerm) async {
     String url =
         'https://itunes.apple.com/search?term=$searchTerm&entity=podcast&country=us&limit=25';
     var result = await http.get(Uri.parse(url));
@@ -20,7 +20,6 @@ class SearchByName with ChangeNotifier {
       searches = [...data.results!];
       notifyListeners();
     }
-    return searches;
   }
 
   Future<String> getDescription(feedUrl) async {
