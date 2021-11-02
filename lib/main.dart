@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:itunes_pod/screens/trend_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/trend_provider.dart';
+import './screens/search_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.grey,
       ),
-      home: const TrendScreen(),
+      home: const SearchScreen(),
     );
   }
 }

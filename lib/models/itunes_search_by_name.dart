@@ -31,28 +31,28 @@ class Podcasts {
 }
 
 class PodResult {
-  PodResult({
-    this.wrapperType,
-    this.kind,
-    this.artistId,
-    this.collectionId,
-    this.trackId,
-    this.artistName,
-    this.collectionName,
-    this.trackName,
-    this.artistViewUrl,
-    this.collectionViewUrl,
-    this.feedUrl,
-    this.trackViewUrl,
-    this.artworkUrl30,
-    this.artworkUrl60,
-    this.artworkUrl100,
-    this.releaseDate,
-    this.trackCount,
-    this.country,
-    this.currency,
-    this.artworkUrl600,
-  });
+  PodResult(
+      {this.wrapperType,
+      this.kind,
+      this.artistId,
+      this.collectionId,
+      this.trackId,
+      this.artistName,
+      this.collectionName,
+      this.trackName,
+      this.artistViewUrl,
+      this.collectionViewUrl,
+      this.feedUrl,
+      this.trackViewUrl,
+      this.artworkUrl30,
+      this.artworkUrl60,
+      this.artworkUrl100,
+      this.releaseDate,
+      this.trackCount,
+      this.country,
+      this.currency,
+      this.artworkUrl600,
+      this.description = ''});
 
   String? wrapperType;
   String? kind;
@@ -70,14 +70,12 @@ class PodResult {
   String? artworkUrl30;
   String? artworkUrl60;
   String? artworkUrl100;
-
   DateTime? releaseDate;
-
   int? trackCount;
   String? country;
   String? currency;
-
   String? artworkUrl600;
+  String description = '';
 
   factory PodResult.fromJson(Map<String, dynamic> json) => PodResult(
         wrapperType: json["wrapperType"],

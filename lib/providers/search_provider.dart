@@ -1,16 +1,17 @@
 import 'package:flutter/cupertino.dart';
-
+import 'package:xml/xml.dart';
 import '../models/itunes_search_by_name.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// sennilega betra (of stórar myndir!!!!) að nota podcastindex.org þr sem description er að finna.
 //String baseUrl = 'https://itunes.apple.com/search?term=fresh+air&entity=podcast&country=us&limit=20';
-List<PodResult> searches = [];
 
 class SearchByName with ChangeNotifier {
-  Future nameSarch(String searchTerm) async {
+  List<PodResult> searches = [];
+  Future<List<PodResult>> nameSearch(String searchTerm) async {
     String url =
-        'https://itunes.apple.com/search?term=$searchTerm&entity=podcast&country=us&limit=20';
+        'https://itunes.apple.com/search?term=$searchTerm&entity=podcast&country=us&limit=25';
     var result = await http.get(Uri.parse(url));
     if (result.statusCode == 200) {
       var decoded = json.decode(result.body);
@@ -19,5 +20,24 @@ class SearchByName with ChangeNotifier {
       searches = [...data.results!];
       notifyListeners();
     }
+    return searches;
+  }
+
+  Future<String> getDescription(feedUrl) async {
+    print('calling');
+    String description = 'No data';
+    var xmlResult = await http.get(Uri.parse(feedUrl));
+    if (xmlResult.statusCode == 200) {
+      try {
+        XmlDocument raw = XmlDocument.parse(xmlResult.body);
+        var dat = raw.findAllElements('channel');
+        description = dat.first.findElements('description').first.text;
+      } catch (e) {
+        print(e.toString());
+      }
+    } else {
+      description = 'No description';
+    }
+    return description;
   }
 }
