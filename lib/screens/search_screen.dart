@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:itunes_pod/models/itunes_search_by_name.dart';
+import 'package:itunes_pod/screens/audio_screen.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import '../providers/search_provider.dart';
+import '../models/itunes_search_by_name.dart';
 //import '../models/itunes_search_by_name.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -12,7 +14,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  // String searchText = 'fresh+air';
+  AudioPlayer player = AudioPlayer();
   bool startSearch = false;
 
   List<PodResult> dataSearch = [];
@@ -28,6 +30,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
   static String stripHtmlIfNeeded(String text) {
     return text.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), ' ');
+  }
+
+  @override
+  void dispose() {
+    player.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,7 +59,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       final searchData = dataSearch[index];
 
                       return ExpansionTile(
-                        childrenPadding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        childrenPadding:
+                            const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         onExpansionChanged: (bool expanded) async {
                           if (searchData.description.isEmpty) {
                             String temp = await context
@@ -71,16 +80,33 @@ class _SearchScreenState extends State<SearchScreen> {
                         children: [
                           Align(
                               alignment: Alignment.topRight,
-                              child: Icon(Icons.podcasts)),
+                              child: IconButton(
+                                onPressed: () {
+                                  if (player.playing) player.stop();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AudioScreen(
+                                              itunesId: searchData.collectionId
+                                                  .toString(),
+                                              player: player)));
+                                  print(searchData.collectionId);
+                                },
+                                icon: const Icon(
+                                  Icons.podcasts,
+                                  color: Colors.amber,
+                                  size: 32,
+                                ),
+                              )),
                           Container(
                               child: searchData.description.isNotEmpty
                                   ? Text(searchData.description)
-                                  : CircularProgressIndicator()),
+                                  : const CircularProgressIndicator()),
                         ],
                       );
                     }),
               )
-            : SizedBox(),
+            : const SizedBox(),
       ]),
     );
   }

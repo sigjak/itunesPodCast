@@ -319,8 +319,9 @@ class EpisodesWidget extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              AudioScreen(episode: episode, player: player),
+                          builder: (context) => AudioScreen(
+                              itunesId: episode.artistId.toString(),
+                              player: player),
                         ),
                       );
                     },

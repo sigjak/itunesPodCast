@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itunes_pod/providers/episode_provider.dart';
 import 'package:itunes_pod/services/save_service.dart';
 import 'package:itunes_pod/sql/episode_favorite_model.dart';
 import 'package:itunes_pod/sql/podcasts_favorite_model.dart';
@@ -15,9 +16,9 @@ import '../audio/player_buttons.dart';
 import '../audio/slider_bar.dart';
 
 class AudioScreen extends StatefulWidget {
-  const AudioScreen({required this.episode, required this.player, Key? key})
+  const AudioScreen({required this.itunesId, required this.player, Key? key})
       : super(key: key);
-  final Episode episode;
+  final String itunesId;
   final AudioPlayer player;
   @override
   _AudioScreenState createState() => _AudioScreenState();
@@ -25,22 +26,29 @@ class AudioScreen extends StatefulWidget {
 
 class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   List<Episode> episodes = [];
+  bool isLoaded = false;
   bool isSelected = false;
   int? tappedIndex;
 
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
+    context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
+      episodes = context.read<ItunesEpisodes>().episodeList;
+      setState(() {
+        isLoaded = true;
+      });
+    });
     super.initState();
     print('Init STTTAAAAAAAAAAAAATTTTE');
     // if coming from trend add one episode to episodes (List)
 
-    episodes.add(widget.episode);
+    //episodes.add(widget.episode);
 
     // _init(widget.episode.episodeUrl!, widget.episode.trackName!);
   }
 
-  Future<void> _init(String audioUrl, String audioTitle) async {
+  Future<void> _init(Episode episode) async {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.speech());
     widget.player.playbackEventStream.listen((event) {},
@@ -50,11 +58,11 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     });
 
     try {
-      AudioSource audioSource = AudioSource.uri(Uri.parse(audioUrl),
+      AudioSource audioSource = AudioSource.uri(Uri.parse(episode.episodeUrl!),
           tag: MediaItem(
               id: '1',
-              album: widget.episode.collectionName,
-              title: audioTitle));
+              album: episode.collectionName,
+              title: episode.trackName!));
       await widget.player.setAudioSource(audioSource);
       widget.player.play();
     } catch (e) {
@@ -119,116 +127,121 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text('Title'),
       ),
-      body: Column(
-        children: [
-          Image(
-            image: NetworkImage(widget.episode.artworkUrl600!, scale: 2),
-          ),
-          PlayerButtons(widget.player, isSelected, context),
-          StreamBuilder<PositionData>(
-            stream: _positionDataStream,
-            builder: (context, snapshot) {
-              final positionData = snapshot.data;
-              return SliderBar(
-                  audioPlayer: widget.player,
-                  duration: positionData?.duration ?? Duration.zero,
-                  position: positionData?.position ?? Duration.zero,
-                  bufferedPosition:
-                      positionData?.bufferedPosition ?? Duration.zero);
-            },
-          ),
-          Expanded(
-            child: ListView.builder(
-                itemCount: episodes.length,
-                itemBuilder: (context, index) {
-                  final episode = episodes[index];
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: 150,
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          width: 1,
-                          color:
-                              tappedIndex == index ? Colors.white : Colors.grey,
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                isSelected = false;
-                                tappedIndex = index;
-                              });
-                              _init(episode.episodeUrl!, episode.trackName!);
-                            },
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Text(episode.trackName!),
+      body: isLoaded
+          ? Column(
+              children: [
+                Image(
+                  image: NetworkImage(episodes[0].artworkUrl600!, scale: 2),
+                ),
+                PlayerButtons(widget.player, isSelected, context),
+                StreamBuilder<PositionData>(
+                  stream: _positionDataStream,
+                  builder: (context, snapshot) {
+                    final positionData = snapshot.data;
+                    return SliderBar(
+                        audioPlayer: widget.player,
+                        duration: positionData?.duration ?? Duration.zero,
+                        position: positionData?.position ?? Duration.zero,
+                        bufferedPosition:
+                            positionData?.bufferedPosition ?? Duration.zero);
+                  },
+                ),
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: episodes.length,
+                      itemBuilder: (context, index) {
+                        final episode = episodes[index];
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: 150,
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 1,
+                                color: tappedIndex == index
+                                    ? Colors.white
+                                    : Colors.grey,
+                              ),
+                            ),
+                            child: SingleChildScrollView(
+                              child: Column(children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      isSelected = false;
+                                      tappedIndex = index;
+                                    });
+                                    _init(episode);
+                                  },
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 12),
+                                        child: Text(episode.trackName!),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            dateToString(episode.releaseDate ??
+                                                DateTime.now()),
+                                            style: const TextStyle(fontSize: 9),
+                                          ),
+                                          Text(
+                                            totime(
+                                                episode.trackTimeMillis ?? 0),
+                                            style: const TextStyle(fontSize: 9),
+                                          )
+                                        ],
+                                      ),
+                                      Text(episode.description ?? ''),
+                                    ],
+                                  ),
                                 ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      dateToString(episode.releaseDate ??
-                                          DateTime.now()),
-                                      style: const TextStyle(fontSize: 9),
-                                    ),
-                                    Text(
-                                      totime(episode.trackTimeMillis ?? 0),
-                                      style: const TextStyle(fontSize: 9),
-                                    )
-                                  ],
+                                Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: TextButton(
+                                      onPressed: () async {
+                                        showDloadIndicator(context, episode);
+                                        await saveEpisode(episode);
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Save Episode')),
                                 ),
-                                Text(episode.description ?? ''),
-                              ],
+                                ElevatedButton(
+                                    onPressed: () async {
+                                      await context
+                                          .read<SaveService>()
+                                          .getEpisodesInDirectory(
+                                              episode.collectionName!);
+                                      var rr = await context
+                                          .read<PodcastServices>()
+                                          .getSingleEpisode(episode.trackName!);
+                                      print(rr.episodeDuration);
+                                      // File fileToDelete = File(rr.dloadLocation!);
+                                      // if (fileToDelete.existsSync()) {
+                                      //   fileToDelete.delete();
+                                      //   print('file deleted');
+                                      // } else {
+                                      //   print('no such file');
+                                      // }
+                                      // await context
+                                      //     .read<PodcastServices>()
+                                      //     .deleteSavedEpisode(rr.dloadLocation!);
+                                    },
+                                    child: Text('dededed'))
+                              ]),
                             ),
                           ),
-                          Align(
-                            alignment: Alignment.bottomLeft,
-                            child: TextButton(
-                                onPressed: () async {
-                                  showDloadIndicator(context, episode);
-                                  await saveEpisode(episode);
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Save Episode')),
-                          ),
-                          ElevatedButton(
-                              onPressed: () async {
-                                await context
-                                    .read<SaveService>()
-                                    .getEpisodesInDirectory(
-                                        episode.collectionName!);
-                                var rr = await context
-                                    .read<PodcastServices>()
-                                    .getSingleEpisode(episode.trackName!);
-                                print(rr.episodeDuration);
-                                // File fileToDelete = File(rr.dloadLocation!);
-                                // if (fileToDelete.existsSync()) {
-                                //   fileToDelete.delete();
-                                //   print('file deleted');
-                                // } else {
-                                //   print('no such file');
-                                // }
-                                // await context
-                                //     .read<PodcastServices>()
-                                //     .deleteSavedEpisode(rr.dloadLocation!);
-                              },
-                              child: Text('dededed'))
-                        ]),
-                      ),
-                    ),
-                  );
-                }),
-          )
-        ],
-      ),
+                        );
+                      }),
+                )
+              ],
+            )
+          : Center(child: CircularProgressIndicator()),
     );
   }
 
