@@ -176,7 +176,7 @@ packages:
       name: just_audio
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.14"
+    version: "0.9.15"
   just_audio_background:
     dependency: "direct main"
     description:
@@ -239,7 +239,7 @@ packages:
       name: path_provider
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.5"
+    version: "2.0.6"
   path_provider_linux:
     dependency: transitive
     description:

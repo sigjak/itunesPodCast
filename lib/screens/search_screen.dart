@@ -61,7 +61,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       return ExpansionTile(
                         childrenPadding:
                             const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        onExpansionChanged: (bool expanded) async {
+                        onExpansionChanged: (isExpanded) async {
+                          print(isExpanded);
                           if (searchData.description.isEmpty) {
                             String temp = await context
                                 .read<SearchByName>()

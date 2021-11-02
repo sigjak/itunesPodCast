@@ -146,15 +146,16 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                             positionData?.bufferedPosition ?? Duration.zero);
                   },
                 ),
+                SizedBox(height: 10),
                 Expanded(
                   child: ListView.builder(
-                      itemCount: episodes.length,
+                      itemCount: episodes.length - 1,
                       itemBuilder: (context, index) {
-                        final episode = episodes[index];
+                        final episode = episodes[index + 1];
                         return Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.fromLTRB(20, 2, 20, 5),
                           child: Container(
-                            height: 150,
+                            height: 100,
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                             decoration: BoxDecoration(
                               border: Border.all(
