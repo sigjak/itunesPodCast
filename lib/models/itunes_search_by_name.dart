@@ -52,7 +52,8 @@ class PodResult {
       this.country,
       this.currency,
       this.artworkUrl600,
-      this.description = ''});
+      this.description = '',
+      this.isExpanded = false});
 
   String? wrapperType;
   String? kind;
@@ -76,6 +77,7 @@ class PodResult {
   String? currency;
   String? artworkUrl600;
   String description = '';
+  bool isExpanded = false;
 
   factory PodResult.fromJson(Map<String, dynamic> json) => PodResult(
         wrapperType: json["wrapperType"],

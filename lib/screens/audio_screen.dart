@@ -146,7 +146,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                             positionData?.bufferedPosition ?? Duration.zero);
                   },
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Expanded(
                   child: ListView.builder(
                       itemCount: episodes.length - 1,
@@ -170,7 +170,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                 GestureDetector(
                                   onTap: () {
                                     setState(() {
-                                      isSelected = false;
+                                      isSelected = true;
                                       tappedIndex = index;
                                     });
                                     _init(episode);

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:itunes_pod/screens/audio_screen.dart';
 import 'package:just_audio/just_audio.dart';
@@ -53,60 +55,74 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         startSearch
             ? Expanded(
-                child: ListView.builder(
-                    itemCount: dataSearch.length,
-                    itemBuilder: (context, index) {
-                      final searchData = dataSearch[index];
+                child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ExpansionPanelList.radio(
+                    expansionCallback: (int index, bool isExpanded) async {
+                      if (dataSearch[index].description.isEmpty) {
+                        String temp = await context
+                            .read<SearchByName>()
+                            .getDescription(dataSearch[index].feedUrl);
 
-                      return ExpansionTile(
-                        childrenPadding:
-                            const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        onExpansionChanged: (isExpanded) async {
-                          print(isExpanded);
-                          if (searchData.description.isEmpty) {
-                            String temp = await context
-                                .read<SearchByName>()
-                                .getDescription(searchData.feedUrl);
-
-                            setState(() {
-                              searchData.description = stripHtmlIfNeeded(temp);
-                            });
-                          }
+                        setState(() {
+                          dataSearch[index].description =
+                              stripHtmlIfNeeded(temp);
+                        });
+                      }
+                    },
+                    children: dataSearch.map<ExpansionPanelRadio>((podcast) {
+                      return ExpansionPanelRadio(
+                        value: podcast.trackName!,
+                        headerBuilder: (context, isExpanded) {
+                          return ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(podcast.artworkUrl30!),
+                              ),
+                              title: Text(podcast.trackName!));
                         },
-                        leading: CircleAvatar(
-                          backgroundImage:
-                              NetworkImage(searchData.artworkUrl30!),
-                        ),
-                        title: Text(searchData.trackName ?? ''),
-                        children: [
-                          Align(
-                              alignment: Alignment.topRight,
-                              child: IconButton(
-                                onPressed: () {
-                                  if (player.playing) player.stop();
-                                  Navigator.push(
+                        body: podcast.description.isNotEmpty
+                            ? ListTile(
+                                title: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(20, 4, 0, 10),
+                                  child: Container(
+                                    height: 100,
+                                    child: SingleChildScrollView(
+                                      child: Text(
+                                        podcast.description,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    if (player.playing) player.stop();
+                                    Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => AudioScreen(
-                                              itunesId: searchData.collectionId
-                                                  .toString(),
-                                              player: player)));
-                                  print(searchData.collectionId);
-                                },
-                                icon: const Icon(
-                                  Icons.podcasts,
-                                  color: Colors.amber,
-                                  size: 32,
+                                        builder: (context) => AudioScreen(
+                                            itunesId:
+                                                podcast.collectionId.toString(),
+                                            player: player),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.podcasts,
+                                    color: Colors.amber,
+                                    size: 32,
+                                  ),
                                 ),
-                              )),
-                          Container(
-                              child: searchData.description.isNotEmpty
-                                  ? Text(searchData.description)
-                                  : const CircularProgressIndicator()),
-                        ],
+                              )
+                            : const CircularProgressIndicator(),
                       );
-                    }),
-              )
+                    }).toList(),
+                  ),
+                ),
+              ))
             : const SizedBox(),
       ]),
     );
