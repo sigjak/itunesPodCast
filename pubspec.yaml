@@ -36,7 +36,7 @@ dependencies:
     provider: ^6.0.1
     http: ^0.13.4
     sqflite: ^2.0.0+4
-    just_audio: ^0.9.15
+    just_audio: ^0.9.16
     intl: ^0.17.0
     just_audio_background: ^0.0.1-beta.1
     rxdart: ^0.27.2
@@ -66,8 +66,8 @@ flutter:
     uses-material-design: true
 
     # To add assets to your application, add an assets section, like this:
-    # assets:
-    #   - images/a_dot_burr.jpeg
+    assets:
+        - assets/images/p1.jpg
     #   - images/a_dot_ham.jpeg
 
     # An image asset can refer to one or more resolution-specific "variants", see

@@ -23,8 +23,8 @@ class SearchByName with ChangeNotifier {
   }
 
   Future<String> getDescription(feedUrl) async {
-    print('calling');
-    String description = 'No data';
+    //print('calling');
+    String description = 'No data available';
     var xmlResult = await http.get(Uri.parse(feedUrl));
     if (xmlResult.statusCode == 200) {
       try {
