@@ -16,8 +16,10 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   AudioPlayer player = AudioPlayer();
   bool startSearch = false;
+  bool playerPlaying = false;
   final textController = TextEditingController();
   List<PodResult> dataSearch = [];
+  ScrollController _scrollController = ScrollController();
 
   Future initSearch() async {
     String input = textController.text;
@@ -45,7 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(slivers: [
+      body: CustomScrollView(controller: _scrollController, slivers: [
         SliverAppBar(
           toolbarHeight: 70,
           snap: true,
@@ -103,6 +105,18 @@ class _SearchScreenState extends State<SearchScreen> {
                 icon: const Icon(Icons.clear)),
           ],
         ),
+        playerPlaying
+            ? SliverToBoxAdapter(
+                child: TextButton(
+                onPressed: () {
+                  player.stop();
+                  setState(() {
+                    playerPlaying = false;
+                  });
+                },
+                child: const Text('Stop player'),
+              ))
+            : const SliverToBoxAdapter(child: SizedBox()),
         startSearch
             ? SliverToBoxAdapter(
                 child: SingleChildScrollView(
@@ -149,9 +163,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ),
                                   ),
                                   trailing: IconButton(
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (player.playing) player.stop();
-                                      Navigator.push(
+                                      bool playResult = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => AudioScreen(
@@ -160,6 +174,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                               player: player),
                                         ),
                                       );
+                                      _scrollController.animateTo(0,
+                                          duration: const Duration(seconds: 2),
+                                          curve: Curves.easeInOutCirc);
+                                      setState(() {
+                                        playerPlaying = playResult;
+                                      });
                                     },
                                     icon: const Icon(
                                       Icons.podcasts,

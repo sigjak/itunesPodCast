@@ -10,6 +10,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../sql/podcast_sql_services.dart';
 import '../models/itunes_episodes.dart';
 import '../audio/player_buttons.dart';
@@ -28,18 +29,37 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   List<Episode> episodes = [];
   bool isLoaded = false;
   bool isSelected = false;
+  bool isFavorite = false;
   int? tappedIndex;
+  late String podcastName;
+  late String podcastImage;
+  late int itunesPocastId;
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
+    var dd = context.read<PodcastServices>();
+
     context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
       episodes = context.read<ItunesEpisodes>().episodeList;
       setState(() {
+        podcastName = episodes[0].collectionName ?? '';
+        podcastImage = episodes[0].artworkUrl600 ?? '';
+        itunesPocastId = int.parse(widget.itunesId);
         isLoaded = true;
       });
+      dd.checkIfPodcastInDB(podcastName).then((value) {
+        if (value) {
+          setState(() {
+            isFavorite = true;
+          });
+        }
+      });
     });
+
     super.initState();
+
     print('Init STTTAAAAAAAAAAAAATTTTE');
     // if coming from trend add one episode to episodes (List)
 
@@ -96,6 +116,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
+    _scrollController.dispose();
     //widget.player.dispose();
     super.dispose();
   }
@@ -123,34 +144,96 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    var podsql = context.read<PodcastServices>();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Title'),
-      ),
       body: isLoaded
-          ? Column(
-              children: [
-                Image(
-                  image: NetworkImage(episodes[0].artworkUrl600!, scale: 2),
-                ),
-                PlayerButtons(widget.player, isSelected, context),
-                StreamBuilder<PositionData>(
-                  stream: _positionDataStream,
-                  builder: (context, snapshot) {
-                    final positionData = snapshot.data;
-                    return SliderBar(
-                        audioPlayer: widget.player,
-                        duration: positionData?.duration ?? Duration.zero,
-                        position: positionData?.position ?? Duration.zero,
-                        bufferedPosition:
-                            positionData?.bufferedPosition ?? Duration.zero);
-                  },
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: ListView.builder(
-                      itemCount: episodes.length - 1,
-                      itemBuilder: (context, index) {
+          ? SafeArea(
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverAppBar(
+                    leading: BackButton(
+                      onPressed: () =>
+                          Navigator.pop(context, widget.player.playing),
+                    ),
+                    actions: [
+                      // ElevatedButton(
+                      //     onPressed: () async {
+                      //       print(await context
+                      //           .read<PodcastServices>()
+                      //           .deleteDB());
+                      //     },
+                      //   child: Text('deleteDb')),
+                      !isFavorite
+                          ? Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextButton(
+                                child: const Text('Add to favorites'),
+                                onPressed: () async {
+                                  PodFavorite pod = PodFavorite(
+                                      podcastName: podcastName,
+                                      podcastImage: podcastImage,
+                                      podcastFeed: itunesPocastId);
+                                  await podsql.addPodcast(pod);
+                                  setState(() {
+                                    isFavorite = true;
+                                  });
+
+                                  //show message
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      snack(Icons.check, 'Added to favorites'));
+                                },
+                              ),
+                            )
+                          : const SizedBox()
+                    ],
+                    backgroundColor: const Color(0x002e2e2e),
+                    shadowColor: const Color(0x002e2e2e),
+                    snap: true,
+                    floating: true,
+                    expandedHeight: 280,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        // add dummy image if error
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 40),
+                            CachedNetworkImage(
+                              imageUrl: podcastImage,
+                              width: 200,
+                              errorWidget: (context, url, error) => const Image(
+                                  image: AssetImage('assets/images/dd.png')),
+                              placeholder: (context, podcastImage) =>
+                                  const Center(
+                                      child: CircularProgressIndicator()),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Center(
+                        child:
+                            PlayerButtons(widget.player, isSelected, context)),
+                  ),
+                  SliverToBoxAdapter(
+                    child: StreamBuilder<PositionData>(
+                      stream: _positionDataStream,
+                      builder: (context, snapshot) {
+                        final positionData = snapshot.data;
+                        return SliderBar(
+                            audioPlayer: widget.player,
+                            duration: positionData?.duration ?? Duration.zero,
+                            position: positionData?.position ?? Duration.zero,
+                            bufferedPosition: positionData?.bufferedPosition ??
+                                Duration.zero);
+                      },
+                    ),
+                  ),
+                  SliverFixedExtentList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
                         final episode = episodes[index + 1];
                         return Padding(
                           padding: const EdgeInsets.fromLTRB(20, 2, 20, 5),
@@ -173,6 +256,10 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                       isSelected = true;
                                       tappedIndex = index;
                                     });
+                                    _scrollController.animateTo(0,
+                                        duration: const Duration(seconds: 2),
+                                        curve: Curves.easeInOutCirc);
+
                                     _init(episode);
                                   },
                                   child: Column(
@@ -212,37 +299,16 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                       },
                                       child: const Text('Save Episode')),
                                 ),
-                                ElevatedButton(
-                                    onPressed: () async {
-                                      await context
-                                          .read<SaveService>()
-                                          .getEpisodesInDirectory(
-                                              episode.collectionName!);
-                                      var rr = await context
-                                          .read<PodcastServices>()
-                                          .getSingleEpisode(episode.trackName!);
-                                      print(rr.episodeDuration);
-                                      // File fileToDelete = File(rr.dloadLocation!);
-                                      // if (fileToDelete.existsSync()) {
-                                      //   fileToDelete.delete();
-                                      //   print('file deleted');
-                                      // } else {
-                                      //   print('no such file');
-                                      // }
-                                      // await context
-                                      //     .read<PodcastServices>()
-                                      //     .deleteSavedEpisode(rr.dloadLocation!);
-                                    },
-                                    child: Text('dededed'))
                               ]),
                             ),
                           ),
                         );
-                      }),
-                )
-              ],
+                      }, childCount: episodes.length - 1),
+                      itemExtent: 100)
+                ],
+              ),
             )
-          : Center(child: CircularProgressIndicator()),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
