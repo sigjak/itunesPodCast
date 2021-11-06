@@ -19,7 +19,7 @@ import '../audio/player_buttons.dart';
 import '../audio/slider_bar.dart';
 
 class AudioScreen extends StatefulWidget {
-  AudioScreen(
+  const AudioScreen(
       {required this.itunesId,
       required this.player,
       this.savedEpisodes,
@@ -27,7 +27,7 @@ class AudioScreen extends StatefulWidget {
       : super(key: key);
   final String itunesId;
   final AudioPlayer player;
-  List? savedEpisodes;
+  final List? savedEpisodes;
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
