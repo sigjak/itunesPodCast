@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/itunes_episodes.dart';
 import 'package:itunes_pod/sql/episode_favorite_model.dart';
 import 'package:itunes_pod/sql/podcasts_favorite_model.dart';
 import '../sql/podcast_sql_services.dart';
@@ -16,8 +17,10 @@ class Favs extends StatefulWidget {
 
 class _FavsState extends State<Favs> {
   List<PodFavorite> favoritePodcasts = [];
-  List<EpisFavorite> singlePodcastSavedEpisodes = [];
+  List<EpisFavorite> savedEpisodes = [];
   List<EpisFavorite> allFavorites = [];
+  List<Episode> newEp = [];
+
   @override
   void initState() {
     getData();
@@ -26,18 +29,27 @@ class _FavsState extends State<Favs> {
 
   Future<void> getData() async {
     var podservice = context.read<PodcastServices>();
-    //await podservice.getAllFavoritePodcasts();
     await podservice.getEpisodesFromSinglePodcast(widget.podcastName);
-    // print(podservice.favSinglePodEpisodes.length);
-    await podservice.getAllFavoriteEpisodes();
-    //print(podservice.allFavoriteEpisodes.length);
-
     setState(() {
-      favoritePodcasts = [...podservice.favPodcasts];
-      singlePodcastSavedEpisodes = [...podservice.favSinglePodEpisodes];
-      allFavorites = [...podservice.allFavoriteEpisodes];
+      savedEpisodes = [...podservice.favSinglePodEpisodes];
+      newEp = transPose();
     });
-    print(singlePodcastSavedEpisodes[0].toString());
+  }
+
+  List<Episode> transPose() {
+    List<Episode> tempEp = [];
+    for (int i = 0; i < savedEpisodes.length; i++) {
+      Episode episode = Episode(
+        collectionName: savedEpisodes[i].podcastName,
+        artworkUrl600: savedEpisodes[i].podcastImage,
+        trackName: savedEpisodes[i].episodeName,
+        description: savedEpisodes[i].episodeDescription,
+        trackTimeMillis: savedEpisodes[i].episodeDuration,
+        releaseDate: DateTime.parse(savedEpisodes[i].episodeDate),
+      );
+      tempEp.add(episode);
+    }
+    return tempEp;
   }
 
   String dateToString(DateTime dt) {
@@ -63,7 +75,7 @@ class _FavsState extends State<Favs> {
         children: [
           // Expanded(
           //   child: ListView.builder(
-          //       itemCount: favoritePodcasts.length,
+          //       itemCount: newEp.length,
           //       itemBuilder: (context, index) {
           //         final pod = favoritePodcasts[index];
           //         return Column(
@@ -75,36 +87,38 @@ class _FavsState extends State<Favs> {
           //         );
           //       }),
           // ),
-          Expanded(
-            child: ListView.builder(
-                itemCount: singlePodcastSavedEpisodes.length,
-                itemBuilder: (context, index) {
-                  final episode = singlePodcastSavedEpisodes[index];
+          newEp.isNotEmpty
+              ? Expanded(
+                  child: ListView.builder(
+                      itemCount: newEp.length,
+                      itemBuilder: (context, index) {
+                        final episode = newEp[index];
 
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(episode.episodeName),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Text(
-                          //   dateToString(episode.episodeDate),
-                          //   style: const TextStyle(fontSize: 9),
-                          // ),
-                          Text(
-                            totime(episode.episodeDuration),
-                            style: const TextStyle(fontSize: 9),
-                          )
-                        ],
-                      ),
-                      Text(episode.episodeDescription),
-                    ],
-                  );
-                }),
-          ),
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(episode.trackName!),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  dateToString(episode.releaseDate!),
+                                  style: const TextStyle(fontSize: 9),
+                                ),
+                                Text(
+                                  totime(episode.trackTimeMillis!),
+                                  style: const TextStyle(fontSize: 9),
+                                )
+                              ],
+                            ),
+                            Text(episode.description!),
+                          ],
+                        );
+                      }),
+                )
+              : CircularProgressIndicator(),
         ],
       )),
     );

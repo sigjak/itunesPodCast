@@ -169,6 +169,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => AudioScreen(
+                                              podcastName:
+                                                  podcast.collectionName!,
+                                              isSaved: false,
                                               itunesId: podcast.collectionId
                                                   .toString(),
                                               player: player),

@@ -316,14 +316,14 @@ class EpisodesWidget extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () {
                       newPlayer();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AudioScreen(
-                              itunesId: episode.artistId.toString(),
-                              player: player),
-                        ),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => AudioScreen(
+                      //         itunesId: episode.artistId.toString(),
+                      //         player: player),
+                      //   ),
+                      // );
                     },
                     child: Card(
                       elevation: 5,

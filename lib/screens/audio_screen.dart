@@ -21,27 +21,30 @@ import '../audio/slider_bar.dart';
 class AudioScreen extends StatefulWidget {
   const AudioScreen(
       {required this.itunesId,
+      required this.podcastName,
       required this.player,
-      this.savedEpisodes,
+      required this.isSaved,
       Key? key})
       : super(key: key);
   final String itunesId;
+  final String podcastName;
   final AudioPlayer player;
-  final List? savedEpisodes;
+  final bool isSaved;
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
 
 class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   List<Episode> episodes = [];
+  List<EpisFavorite> savedEpisodes = [];
   bool isLoaded = false;
   bool isSelected = false;
   bool isFavorite = false;
   int? tappedIndex;
   String episodeName = '';
-  late String podcastName;
+
   late String podcastImage;
-  late int itunesPocastId;
+  late int itunesPodcastId;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -50,14 +53,22 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     var dd = context.read<PodcastServices>();
 
     context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
-      episodes = context.read<ItunesEpisodes>().episodeList;
-      setState(() {
-        podcastName = episodes[0].collectionName ?? '';
+      if (!widget.isSaved) {
+        episodes = context.read<ItunesEpisodes>().episodeList;
         podcastImage = episodes[0].artworkUrl600 ?? '';
-        itunesPocastId = int.parse(widget.itunesId);
+        itunesPodcastId = int.parse(widget.itunesId);
         isLoaded = true;
+      } else {
+        getData();
+      }
+
+      setState(() {
+        //podcastName = episodes[0].collectionName ?? '';
+        // podcastImage = episodes[0].artworkUrl600 ?? '';
+        // itunesPodcastId = int.parse(widget.itunesId);
+        // isLoaded = true;
       });
-      dd.checkIfPodcastInDB(podcastName).then((value) {
+      dd.checkIfPodcastInDB(widget.podcastName).then((value) {
         if (value) {
           setState(() {
             isFavorite = true;
@@ -67,13 +78,39 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     });
 
     super.initState();
+  }
 
-    print('Init STTTAAAAAAAAAAAAATTTTE');
-    // if coming from trend add one episode to episodes (List)
+  List<Episode> transPose() {
+    List<Episode> tempEp = [];
+    for (int i = 0; i < savedEpisodes.length; i++) {
+      Episode episode = Episode(
+        collectionName: savedEpisodes[i].podcastName,
+        episodeUrl: savedEpisodes[i].dloadLocation,
+        artworkUrl600: savedEpisodes[i].podcastImage,
+        trackName: savedEpisodes[i].episodeName,
+        description: savedEpisodes[i].episodeDescription,
+        trackTimeMillis: savedEpisodes[i].episodeDuration,
+        releaseDate: DateTime.parse(savedEpisodes[i].episodeDate),
+      );
+      tempEp.add(episode);
+    }
+    Episode episodeZero = Episode(
+        collectionName: savedEpisodes[0].podcastName,
+        artworkUrl600: savedEpisodes[0].podcastImage);
+    tempEp.insert(0, episodeZero);
 
-    //episodes.add(widget.episode);
+    return tempEp;
+  }
 
-    // _init(widget.episode.episodeUrl!, widget.episode.trackName!);
+  Future<void> getData() async {
+    var podservice = context.read<PodcastServices>();
+    await podservice.getEpisodesFromSinglePodcast(widget.podcastName);
+    setState(() {
+      savedEpisodes = [...podservice.favSinglePodEpisodes];
+      episodes = transPose();
+      podcastImage = episodes[0].artworkUrl600!;
+      isLoaded = true;
+    });
   }
 
   Future<void> _init(Episode episode) async {
@@ -187,9 +224,9 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                   child: const Text('Add to favorites'),
                                   onPressed: () async {
                                     PodFavorite pod = PodFavorite(
-                                        podcastName: podcastName,
+                                        podcastName: widget.podcastName,
                                         podcastImage: podcastImage,
-                                        podcastFeed: itunesPocastId);
+                                        podcastFeed: itunesPodcastId);
                                     await podsql.addPodcast(pod);
                                     setState(() {
                                       isFavorite = true;

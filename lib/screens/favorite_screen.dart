@@ -115,10 +115,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => Favs(
-                                                  itunesId: podcast.podcastFeed,
+                                              builder: (context) => AudioScreen(
                                                   podcastName:
-                                                      podcast.podcastName),
+                                                      podcast.podcastName,
+                                                  isSaved: true,
+                                                  itunesId: podcast.podcastFeed
+                                                      .toString(),
+                                                  player: player),
                                             ),
                                           );
                                         } else {
@@ -170,6 +173,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => AudioScreen(
+                                                podcastName:
+                                                    podcast.podcastName,
+                                                isSaved: false,
                                                 itunesId: podcast.podcastFeed
                                                     .toString(),
                                                 player: player,
@@ -185,8 +191,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                                 podcast.podcastImage),
                                       ),
                                       title: Text(podcast.podcastName),
-                                      subtitle:
-                                          Text(podcast.podcastFeed.toString()),
+                                      trailing: Icon(Icons.delete_forever),
                                     ),
                                   ),
                                 ),
