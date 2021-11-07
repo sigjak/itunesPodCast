@@ -127,8 +127,9 @@ class PodcastServices with ChangeNotifier {
     String result = 'OK';
     try {
       favSinglePodEpisodes = [];
+
       favSinglePodEpisodes = await PodFavDatabase.instance
-          .getAllPodEpisodefromOnePodcast(podcastname);
+          .getAllPodEpisodesfromOnePodcast(podcastname);
       notifyListeners();
     } catch (e) {
       result = readableError(e.toString());

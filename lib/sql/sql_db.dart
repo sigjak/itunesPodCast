@@ -24,6 +24,7 @@ class PodFavDatabase {
     await db.execute('''CREATE TABLE $favoriteEpisodesTable
     (${EpisodeFavFields.id} $intPrimary,
     ${EpisodeFavFields.podcastName} $textType,
+    ${EpisodeFavFields.podcastImage} $textType,
     ${EpisodeFavFields.episodeName} $textType,
     ${EpisodeFavFields.episodeUrl} $textType,
     ${EpisodeFavFields.episodeDate} $textType,
@@ -129,6 +130,7 @@ class PodFavDatabase {
     final result = await db!.query(favoriteEpisodesTable);
     List<EpisFavorite> list =
         result.map((e) => EpisFavorite.fromJson(e)).toList();
+    //print(list);
     return list;
   }
 
@@ -136,20 +138,17 @@ class PodFavDatabase {
 ///////////////////////get episodes from a single podcast /////////
   ///
   ///
-  Future<List<EpisFavorite>> getAllPodEpisodefromOnePodcast(
+  Future<List<EpisFavorite>> getAllPodEpisodesfromOnePodcast(
       String podcastname) async {
     final db = await instance.database;
-    List<EpisFavorite> tempList = [];
-    final maps = await db!.query(favoriteEpisodesTable,
-        columns: EpisodeFavFields.allFields,
-        where: '${EpisodeFavFields.podcastName} = ?',
-        whereArgs: [podcastname]);
-    if (maps.isNotEmpty) {
-      tempList = maps.map((e) => EpisFavorite.fromJson(e)).toList();
-      return tempList;
-    } else {
-      throw ('empty');
-    }
+    final result = await db!.query(
+      favoriteEpisodesTable,
+      where: '${EpisodeFavFields.podcastName} = ?',
+      whereArgs: [podcastname],
+    );
+    List<EpisFavorite> list =
+        result.map((e) => EpisFavorite.fromJson(e)).toList();
+    return list;
   }
 
   /////////////////

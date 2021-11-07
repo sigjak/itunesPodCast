@@ -402,6 +402,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
 
     EpisFavorite favToSave = EpisFavorite(
       podcastName: episode.collectionName!,
+      podcastImage: episode.artworkUrl600!,
       episodeName: episode.trackName!,
       episodeUrl: episode.episodeUrl!,
       episodeDuration: episode.trackTimeMillis!,
@@ -411,7 +412,9 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
       position: widget.player.position,
       dloadLocation: 'dummy',
     );
+    // print(favToSave.toString());
     String result = await podcastSql.addFavoriteEpisode(favToSave);
+
     if (result == 'Episode added') {
       String dloadlocation = await context.read<SaveService>().saveEpisode(
           episode.episodeUrl, episode.collectionName, episode.trackName);

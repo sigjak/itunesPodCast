@@ -5,6 +5,7 @@ const String favoriteEpisodesTable = 'favoriteEpisodesTable';
 class EpisodeFavFields {
   static const String id = 'id';
   static const String podcastName = 'podcastName';
+  static const String podcastImage = 'podcastImage';
   static const String episodeName = 'episodeName';
   static const String episodeUrl = 'episodeUrl';
   static const String episodeDate = 'episodeDate';
@@ -18,6 +19,7 @@ class EpisodeFavFields {
   static final List<String> allFields = [
     id,
     podcastName,
+    podcastImage,
     episodeName,
     episodeUrl,
     episodeDate,
@@ -32,6 +34,7 @@ class EpisodeFavFields {
 class EpisFavorite {
   int? id;
   String podcastName;
+  String podcastImage;
   String episodeName;
   String episodeDate;
   String episodeUrl;
@@ -45,6 +48,7 @@ class EpisFavorite {
   EpisFavorite(
       {this.id,
       required this.podcastName,
+      required this.podcastImage,
       required this.episodeName,
       required this.episodeUrl,
       required this.episodeDate,
@@ -58,6 +62,7 @@ class EpisFavorite {
   Map<String, dynamic> toJson() => {
         EpisodeFavFields.id: id,
         EpisodeFavFields.podcastName: podcastName,
+        EpisodeFavFields.podcastImage: podcastImage,
         EpisodeFavFields.episodeName: episodeName,
         EpisodeFavFields.episodeUrl: episodeUrl,
         EpisodeFavFields.episodeDate: episodeDate,
@@ -73,6 +78,7 @@ class EpisFavorite {
   static EpisFavorite fromJson(Map<String, dynamic> json) => EpisFavorite(
       id: json[EpisodeFavFields.id] as int?,
       podcastName: json[EpisodeFavFields.podcastName] as String,
+      podcastImage: json[EpisodeFavFields.podcastImage] as String,
       episodeName: json[EpisodeFavFields.episodeName] as String,
       episodeUrl: json[EpisodeFavFields.episodeUrl] as String,
       episodeDate: json[EpisodeFavFields.episodeDate] as String,
@@ -98,12 +104,13 @@ class EpisFavorite {
   String toString() {
     return '${EpisodeFavFields.id}: $id\n'
             '${EpisodeFavFields.podcastName} $podcastName\n'
+            '${EpisodeFavFields.podcastImage} $podcastImage\n'
             '${EpisodeFavFields.episodeName}: $episodeName\n'
             '${EpisodeFavFields.episodeUrl}: $episodeUrl\n'
             '${EpisodeFavFields.episodeDate}: $episodeDate\n' +
         '${EpisodeFavFields.episodeDuration}: $episodeDuration\n' +
-        '${EpisodeFavFields.episodeDescription}: $episodeDescription\n,' +
-        '${EpisodeFavFields.timestamp}: $timestamp\n,' +
+        '${EpisodeFavFields.episodeDescription}: $episodeDescription\n' +
+        '${EpisodeFavFields.timestamp}: $timestamp\n' +
         '${EpisodeFavFields.isDownloaded}: $isDownloaded\n' +
         '${EpisodeFavFields.position}: $position' +
         '${EpisodeFavFields.dloadLocation}: $dloadLocation';

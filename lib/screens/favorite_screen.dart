@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:itunes_pod/screens/favs.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:provider/provider.dart';
@@ -111,17 +112,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                             await checkIfSomethingSaved(
                                                 podcast.podcastName);
                                         if (check) {
-                                          // Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder: (context) =>
-                                          //         PlaySavedEpisodes(
-                                          //             podcastName:
-                                          //                 podcast.podcastName,
-                                          //             podcastImage:
-                                          //                 podcast.podcastImage),
-                                          //   ),
-                                          // );
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => Favs(
+                                                  itunesId: podcast.podcastFeed,
+                                                  podcastName:
+                                                      podcast.podcastName),
+                                            ),
+                                          );
                                         } else {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(
@@ -207,19 +206,19 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         ),
                       )),
                     )
-              : SliverToBoxAdapter(
+              : const SliverToBoxAdapter(
                   child: Center(
-                  child: Container(
+                  child: SizedBox(
                       width: 50,
                       height: 50,
-                      child: const CircularProgressIndicator()),
+                      child: CircularProgressIndicator()),
                 )),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
+      floatingActionButton: FloatingActionButton.small(
         onPressed: () {
-          dispose();
+          player.dispose();
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         },
         child: const Icon(Icons.exit_to_app),

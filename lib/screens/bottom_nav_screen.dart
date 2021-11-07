@@ -24,6 +24,8 @@ class _BottomNavState extends State<BottomNav> {
     return Scaffold(
       body: screens[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         currentIndex: currentIndex,
         onTap: (index) => setState(() => currentIndex = index),
         items: const [
