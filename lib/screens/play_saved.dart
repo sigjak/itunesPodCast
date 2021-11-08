@@ -19,15 +19,17 @@ import '../models/itunes_episodes.dart';
 import '../audio/player_buttons.dart';
 import '../audio/slider_bar.dart';
 
-class AudioScreen extends StatefulWidget {
-  const AudioScreen({required this.itunesId, Key? key}) : super(key: key);
+class PlaySaved extends StatefulWidget {
+  const PlaySaved({required this.itunesId, required this.podcastName, Key? key})
+      : super(key: key);
   final String itunesId;
+  final String podcastName;
 
   @override
-  _AudioScreenState createState() => _AudioScreenState();
+  _PlaySavedState createState() => _PlaySavedState();
 }
 
-class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
+class _PlaySavedState extends State<PlaySaved> with WidgetsBindingObserver {
   List<Episode> episodes = [];
   List<EpisFavorite> savedEpisodes = [];
   AudioPlayer player = AudioPlayer();
@@ -36,7 +38,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   bool isFavorite = false;
   int? tappedIndex;
   String episodeName = '';
-  late String podcastName;
+
   late String podcastImage;
   late int itunesPodcastId;
   final ScrollController _scrollController = ScrollController();
@@ -44,27 +46,66 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
-    var dd = context.read<PodcastServices>();
+    // var dd = context.read<PodcastServices>();
 
-    context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
-      episodes = context.read<ItunesEpisodes>().episodeList;
-      itunesPodcastId = int.parse(widget.itunesId);
-      isLoaded = true;
-      setState(() {
-        podcastName = episodes[0].collectionName ?? '';
-        podcastImage = episodes[0].artworkUrl600 ?? '';
-        itunesPodcastId = int.parse(widget.itunesId);
-        isLoaded = true;
-      });
-      dd.checkIfPodcastInDB(podcastName).then((value) {
-        if (value) {
-          setState(() {
-            isFavorite = true;
-          });
-        }
-      });
+    // context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
+    // if (!widget.isSaved) {
+    //   episodes = context.read<ItunesEpisodes>().episodeList;
+    //   podcastImage = episodes[0].artworkUrl600 ?? '';
+    //   itunesPodcastId = int.parse(widget.itunesId);
+    //   isLoaded = true;
+    // } else {
+    getSavedData();
+
+    setState(() {
+      //podcastName = episodes[0].collectionName ?? '';
+      // podcastImage = episodes[0].artworkUrl600 ?? '';
+      // itunesPodcastId = int.parse(widget.itunesId);
+      // isLoaded = true;
     });
+    // dd.checkIfPodcastInDB(widget.podcastName).then((value) {
+    //   if (value) {
+    //     setState(() {
+    //       isFavorite = true;
+    //     });
+    //   }
+    // });
+    // });
+
     super.initState();
+  }
+
+  List<Episode> transPose() {
+    List<Episode> tempEp = [];
+    for (int i = 0; i < savedEpisodes.length; i++) {
+      Episode episode = Episode(
+        collectionName: savedEpisodes[i].podcastName,
+        episodeUrl: savedEpisodes[i].dloadLocation,
+        artworkUrl600: savedEpisodes[i].podcastImage,
+        trackName: savedEpisodes[i].episodeName,
+        description: savedEpisodes[i].episodeDescription,
+        trackTimeMillis: savedEpisodes[i].episodeDuration,
+        releaseDate: DateTime.parse(savedEpisodes[i].episodeDate),
+      );
+      tempEp.add(episode);
+    }
+    Episode episodeZero = Episode(
+        collectionName: savedEpisodes[0].podcastName,
+        artworkUrl600: savedEpisodes[0].podcastImage);
+    tempEp.insert(0, episodeZero);
+
+    return tempEp;
+  }
+
+  Future<void> getSavedData() async {
+    var podservice = context.read<PodcastServices>();
+    await podservice.getEpisodesFromSinglePodcast(widget.podcastName);
+    setState(() {
+      savedEpisodes = [...podservice.favSinglePodEpisodes];
+      episodes = transPose();
+      podcastImage = episodes[0].artworkUrl600!;
+      isLoaded = true;
+    });
   }
 
   Future<void> _init(Episode episode) async {
@@ -155,44 +196,6 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                   controller: _scrollController,
                   slivers: [
                     SliverAppBar(
-                      leading: BackButton(onPressed: () {
-                        if (player.position > const Duration(minutes: 2)) {
-                          posService.savePosition(episodeName, player.position);
-                        }
-                        Navigator.pop(context, player.playing);
-                      }),
-                      actions: [
-                        // ElevatedButton(
-                        //     onPressed: () async {
-                        //       print(await context
-                        //           .read<PodcastServices>()
-                        //           .deleteDB());
-                        //     },
-                        //   child: Text('deleteDb')),
-                        !isFavorite
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextButton(
-                                  child: const Text('Add to favorites'),
-                                  onPressed: () async {
-                                    PodFavorite pod = PodFavorite(
-                                        podcastName: podcastName,
-                                        podcastImage: podcastImage,
-                                        podcastFeed: itunesPodcastId);
-                                    await podsql.addPodcast(pod);
-                                    setState(() {
-                                      isFavorite = true;
-                                    });
-
-                                    //show message
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        snack(
-                                            Icons.check, 'Added to favorites'));
-                                  },
-                                ),
-                              )
-                            : const SizedBox()
-                      ],
                       backgroundColor: const Color(0x002e2e2e),
                       shadowColor: const Color(0x002e2e2e),
                       snap: true,
@@ -281,7 +284,8 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                           Padding(
                                             padding: const EdgeInsets.only(
                                                 bottom: 12),
-                                            child: Text(episode.trackName!),
+                                            child:
+                                                Text(episode.trackName ?? ''),
                                           ),
                                           Row(
                                             mainAxisAlignment:
@@ -312,12 +316,22 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                               ),
                               actions: [
                                 IconSlideAction(
-                                  caption: 'Save episode',
-                                  icon: Icons.download,
+                                  caption: 'Delete episode',
+                                  icon: Icons.delete,
+                                  color: Colors.grey,
                                   onTap: () async {
-                                    showDloadIndicator(context, episode);
-                                    await saveEpisode(episode);
-                                    Navigator.pop(context);
+                                    File targetFile = File(episode.episodeUrl!);
+                                    if (targetFile.existsSync()) {
+                                      targetFile.deleteSync(recursive: true);
+                                    }
+
+                                    await podsql.deleteSavedEpisode(
+                                        episode.episodeUrl!);
+                                    if (savedEpisodes.length > 1) {
+                                      await getSavedData();
+                                    } else {
+                                      Navigator.of(context).pop();
+                                    }
                                   },
                                 )
                               ],
@@ -337,87 +351,5 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
           },
           child: const Icon(Icons.exit_to_app),
         ));
-  }
-
-  Future<dynamic> showDloadIndicator(BuildContext context, Episode episode) {
-    return showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext context) {
-          //dialogContext = context;
-          return AlertDialog(
-            title: const Text('Downloading...'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                LinearProgressIndicator(
-                    value: context.watch<SaveService>().progress),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('please wait...'),
-                ),
-                TextButton(
-                    onPressed: () async {
-                      context.read<SaveService>().token.cancel('cancelled');
-                      String dloadLocation = await context
-                          .read<SaveService>()
-                          .downloadLocation(
-                              episode.collectionName!, episode.trackName);
-
-                      //clean sql of episode
-                      await context
-                          .read<PodcastServices>()
-                          .deleteSavedEpisode('dummy');
-                      File fileToDelete = File(dloadLocation);
-                      if (fileToDelete.existsSync()) {
-                        fileToDelete.deleteSync();
-                      }
-                      context.read<SaveService>().progress = 0.0;
-                      Navigator.of(context, rootNavigator: true).pop();
-                    },
-                    child: const Text('Cancel'))
-              ],
-            ),
-          );
-        });
-  }
-
-  Future<void> saveEpisode(episode) async {
-    context.read<SaveService>().refreshToken();
-    var podcastSql = context.read<PodcastServices>();
-    bool check = await podcastSql.checkIfPodcastInDB(episode.collectionName!);
-    if (!check) {
-      PodFavorite pod = PodFavorite(
-        podcastName: episode.collectionName!,
-        podcastImage: episode.artworkUrl600!,
-        podcastFeed: episode.collectionId!,
-      );
-      await podcastSql.addPodcast(pod);
-    }
-    // now save episode to location
-
-    EpisFavorite favToSave = EpisFavorite(
-      podcastName: episode.collectionName!,
-      podcastImage: episode.artworkUrl600!,
-      episodeName: episode.trackName!,
-      episodeUrl: episode.episodeUrl!,
-      episodeDuration: episode.trackTimeMillis ?? 0,
-      episodeDate: episode.releaseDate!.toIso8601String(),
-      episodeDescription: episode.description!,
-      timestamp: DateTime.now().microsecondsSinceEpoch,
-      position: player.position,
-      dloadLocation: 'dummy',
-    );
-    // print(favToSave.toString());
-    String result = await podcastSql.addFavoriteEpisode(favToSave);
-
-    if (result == 'Episode added') {
-      String dloadlocation = await context.read<SaveService>().saveEpisode(
-          episode.episodeUrl, episode.collectionName, episode.trackName);
-      await podcastSql.updateSaveLocation(dloadlocation, episode.trackName);
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(snack(Icons.check, 'Already in database'));
-    }
   }
 }

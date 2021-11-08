@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:itunes_pod/screens/favs.dart';
+import 'package:itunes_pod/screens/play_saved.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:provider/provider.dart';
@@ -152,18 +153,17 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                             await checkIfSomethingSaved(
                                                 podcast.podcastName);
                                         if (check) {
-                                          // Navigator.push(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //     builder: (context) => AudioScreen(
-                                          //         podcastName:
-                                          //             podcast.podcastName,
-                                          //         isSaved: true,
-                                          //         itunesId: podcast.podcastFeed
-                                          //             .toString(),
-                                          //         player: player),
-                                          //   ),
-                                          // );
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => PlaySaved(
+                                                podcastName:
+                                                    podcast.podcastName,
+                                                itunesId: podcast.podcastFeed
+                                                    .toString(),
+                                              ),
+                                            ),
+                                          );
                                         } else {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(

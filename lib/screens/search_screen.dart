@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:itunes_pod/screens/audio_screen.dart';
-import 'package:just_audio/just_audio.dart';
+
 import 'package:provider/provider.dart';
 import '../providers/search_provider.dart';
 import '../models/itunes_search_by_name.dart';
