@@ -61,6 +61,46 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     setState(() {});
   }
 
+  Future<void> _showDeleteAlert(podcast) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Warning !'),
+          content: const Text(
+              'This will delete everything related to this podcast and can NOT be undone!'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                String path = await context
+                    .read<SaveService>()
+                    .getDirPath(podcast.podcastName);
+                final dir = Directory(path);
+                dir.deleteSync(recursive: true);
+
+                await context
+                    .read<PodcastServices>()
+                    .deleteSinglePodcast(podcast.podcastName);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var pod = context.watch<PodcastServices>();
@@ -112,18 +152,18 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                             await checkIfSomethingSaved(
                                                 podcast.podcastName);
                                         if (check) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AudioScreen(
-                                                  podcastName:
-                                                      podcast.podcastName,
-                                                  isSaved: true,
-                                                  itunesId: podcast.podcastFeed
-                                                      .toString(),
-                                                  player: player),
-                                            ),
-                                          );
+                                          // Navigator.push(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //     builder: (context) => AudioScreen(
+                                          //         podcastName:
+                                          //             podcast.podcastName,
+                                          //         isSaved: true,
+                                          //         itunesId: podcast.podcastFeed
+                                          //             .toString(),
+                                          //         player: player),
+                                          //   ),
+                                          // );
                                         } else {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(
@@ -146,39 +186,14 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                         textAlign: TextAlign.center,
                                       ))
                                 ],
-                                secondaryActions: [
-                                  SlideAction(
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                      size: 40,
-                                    ),
-                                    onTap: () async {
-                                      String path = await context
-                                          .read<SaveService>()
-                                          .getDirPath(podcast.podcastName);
-                                      final dir = Directory(path);
-                                      dir.deleteSync(recursive: true);
-
-                                      await context
-                                          .read<PodcastServices>()
-                                          .deleteSinglePodcast(
-                                              podcast.podcastName);
-                                    },
-                                  )
-                                ],
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => AudioScreen(
-                                                podcastName:
-                                                    podcast.podcastName,
-                                                isSaved: false,
                                                 itunesId: podcast.podcastFeed
                                                     .toString(),
-                                                player: player,
                                               )),
                                     );
                                   },
@@ -191,7 +206,25 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                                 podcast.podcastImage),
                                       ),
                                       title: Text(podcast.podcastName),
-                                      trailing: Icon(Icons.delete_forever),
+                                      trailing: IconButton(
+                                        onPressed: () {
+                                          _showDeleteAlert(podcast);
+                                          //   String path = await context
+                                          //       .read<SaveService>()
+                                          //       .getDirPath(podcast.podcastName);
+                                          //   final dir = Directory(path);
+                                          //   dir.deleteSync(recursive: true);
+
+                                          //   await context
+                                          //       .read<PodcastServices>()
+                                          //       .deleteSinglePodcast(
+                                          //           podcast.podcastName);
+                                        },
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

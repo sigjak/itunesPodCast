@@ -19,17 +19,9 @@ import '../audio/player_buttons.dart';
 import '../audio/slider_bar.dart';
 
 class AudioScreen extends StatefulWidget {
-  const AudioScreen(
-      {required this.itunesId,
-      required this.podcastName,
-      required this.player,
-      required this.isSaved,
-      Key? key})
-      : super(key: key);
+  const AudioScreen({required this.itunesId, Key? key}) : super(key: key);
   final String itunesId;
-  final String podcastName;
-  final AudioPlayer player;
-  final bool isSaved;
+
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
@@ -37,12 +29,13 @@ class AudioScreen extends StatefulWidget {
 class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   List<Episode> episodes = [];
   List<EpisFavorite> savedEpisodes = [];
+  AudioPlayer player = AudioPlayer();
   bool isLoaded = false;
   bool isSelected = false;
   bool isFavorite = false;
   int? tappedIndex;
   String episodeName = '';
-
+  late String podcastName;
   late String podcastImage;
   late int itunesPodcastId;
   final ScrollController _scrollController = ScrollController();
@@ -53,22 +46,18 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     var dd = context.read<PodcastServices>();
 
     context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
-      if (!widget.isSaved) {
-        episodes = context.read<ItunesEpisodes>().episodeList;
+      episodes = context.read<ItunesEpisodes>().episodeList;
+
+      itunesPodcastId = int.parse(widget.itunesId);
+      isLoaded = true;
+
+      setState(() {
+        podcastName = episodes[0].collectionName ?? '';
         podcastImage = episodes[0].artworkUrl600 ?? '';
         itunesPodcastId = int.parse(widget.itunesId);
         isLoaded = true;
-      } else {
-        getData();
-      }
-
-      setState(() {
-        //podcastName = episodes[0].collectionName ?? '';
-        // podcastImage = episodes[0].artworkUrl600 ?? '';
-        // itunesPodcastId = int.parse(widget.itunesId);
-        // isLoaded = true;
       });
-      dd.checkIfPodcastInDB(widget.podcastName).then((value) {
+      dd.checkIfPodcastInDB(podcastName).then((value) {
         if (value) {
           setState(() {
             isFavorite = true;
@@ -102,9 +91,9 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
     return tempEp;
   }
 
-  Future<void> getData() async {
+  Future<void> getSavedData() async {
     var podservice = context.read<PodcastServices>();
-    await podservice.getEpisodesFromSinglePodcast(widget.podcastName);
+    await podservice.getEpisodesFromSinglePodcast(podcastName);
     setState(() {
       savedEpisodes = [...podservice.favSinglePodEpisodes];
       episodes = transPose();
@@ -116,7 +105,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   Future<void> _init(Episode episode) async {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.speech());
-    widget.player.playbackEventStream.listen((event) {},
+    player.playbackEventStream.listen((event) {},
         onError: (Object e, StackTrace stackTrace) {
       ScaffoldMessenger.of(context)
           .showSnackBar(snack(Icons.error, 'Stream error!'));
@@ -128,11 +117,11 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
               id: '1',
               album: episode.collectionName,
               title: episode.trackName!));
-      await widget.player.setAudioSource(audioSource);
+      await player.setAudioSource(audioSource);
       Duration seeking = await posService.getSavedPosition(episodeName);
 
-      widget.player.seek(seeking);
-      widget.player.play();
+      player.seek(seeking);
+      player.play();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         snack(Icons.error, 'Error loading audio'),
@@ -165,7 +154,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
     _scrollController.dispose();
-    //widget.player.dispose();
+    //player.dispose();
     super.dispose();
   }
 
@@ -173,9 +162,9 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
   /// feature of rx_dart to combine the 3 streams of interest into one.
   Stream<PositionData> get _positionDataStream =>
       Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-          widget.player.positionStream,
-          widget.player.bufferedPositionStream,
-          widget.player.durationStream,
+          player.positionStream,
+          player.bufferedPositionStream,
+          player.durationStream,
           (position, bufferedPosition, duration) => PositionData(
               position, bufferedPosition, duration ?? Duration.zero));
   String dateToString(DateTime dt) {
@@ -202,12 +191,10 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                   slivers: [
                     SliverAppBar(
                       leading: BackButton(onPressed: () {
-                        if (widget.player.position >
-                            const Duration(minutes: 2)) {
-                          posService.savePosition(
-                              episodeName, widget.player.position);
+                        if (player.position > const Duration(minutes: 2)) {
+                          posService.savePosition(episodeName, player.position);
                         }
-                        Navigator.pop(context, widget.player.playing);
+                        Navigator.pop(context, player.playing);
                       }),
                       actions: [
                         // ElevatedButton(
@@ -224,7 +211,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                   child: const Text('Add to favorites'),
                                   onPressed: () async {
                                     PodFavorite pod = PodFavorite(
-                                        podcastName: widget.podcastName,
+                                        podcastName: podcastName,
                                         podcastImage: podcastImage,
                                         podcastFeed: itunesPodcastId);
                                     await podsql.addPodcast(pod);
@@ -271,8 +258,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                     ),
                     SliverToBoxAdapter(
                       child: Center(
-                          child: PlayerButtons(
-                              widget.player, isSelected, context)),
+                          child: PlayerButtons(player, isSelected, context)),
                     ),
                     SliverToBoxAdapter(
                       child: StreamBuilder<PositionData>(
@@ -280,7 +266,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                         builder: (context, snapshot) {
                           final positionData = snapshot.data;
                           return SliderBar(
-                              audioPlayer: widget.player,
+                              audioPlayer: player,
                               duration: positionData?.duration ?? Duration.zero,
                               position: positionData?.position ?? Duration.zero,
                               bufferedPosition:
@@ -373,7 +359,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: FloatingActionButton.small(
           onPressed: () {
-            widget.player.dispose();
+            player.dispose();
             SystemChannels.platform.invokeMethod('SystemNavigator.pop');
           },
           child: const Icon(Icons.exit_to_app),
@@ -442,11 +428,11 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
       podcastImage: episode.artworkUrl600!,
       episodeName: episode.trackName!,
       episodeUrl: episode.episodeUrl!,
-      episodeDuration: episode.trackTimeMillis!,
+      episodeDuration: episode.trackTimeMillis ?? 0,
       episodeDate: episode.releaseDate!.toIso8601String(),
       episodeDescription: episode.description!,
       timestamp: DateTime.now().microsecondsSinceEpoch,
-      position: widget.player.position,
+      position: player.position,
       dloadLocation: 'dummy',
     );
     // print(favToSave.toString());

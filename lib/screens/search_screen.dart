@@ -14,7 +14,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  AudioPlayer player = AudioPlayer();
   bool startSearch = false;
   bool playerPlaying = false;
   final textController = TextEditingController();
@@ -39,7 +38,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   void dispose() {
-    player.dispose();
     textController.dispose();
     super.dispose();
   }
@@ -105,18 +103,18 @@ class _SearchScreenState extends State<SearchScreen> {
                 icon: const Icon(Icons.clear)),
           ],
         ),
-        playerPlaying
-            ? SliverToBoxAdapter(
-                child: TextButton(
-                onPressed: () {
-                  player.stop();
-                  setState(() {
-                    playerPlaying = false;
-                  });
-                },
-                child: const Text('Stop player'),
-              ))
-            : const SliverToBoxAdapter(child: SizedBox()),
+        // playerPlaying
+        //     ? SliverToBoxAdapter(
+        //         child: TextButton(
+        //         onPressed: () {
+        //           player.stop();
+        //           setState(() {
+        //             playerPlaying = false;
+        //           });
+        //         },
+        //         child: const Text('Stop player'),
+        //       ))
+        //     : const SliverToBoxAdapter(child: SizedBox()),
         startSearch
             ? SliverToBoxAdapter(
                 child: SingleChildScrollView(
@@ -164,17 +162,13 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ),
                                   trailing: IconButton(
                                     onPressed: () async {
-                                      if (player.playing) player.stop();
                                       bool playResult = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => AudioScreen(
-                                              podcastName:
-                                                  podcast.collectionName!,
-                                              isSaved: false,
-                                              itunesId: podcast.collectionId
-                                                  .toString(),
-                                              player: player),
+                                            itunesId:
+                                                podcast.collectionId.toString(),
+                                          ),
                                         ),
                                       );
                                       _scrollController.animateTo(0,
@@ -203,7 +197,6 @@ class _SearchScreenState extends State<SearchScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
       floatingActionButton: FloatingActionButton.small(
         onPressed: () {
-          player.dispose();
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         },
         child: const Icon(Icons.exit_to_app),
