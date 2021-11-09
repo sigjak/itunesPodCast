@@ -24,26 +24,26 @@ class _BottomNavState extends State<BottomNav> {
     return Scaffold(
       body: screens[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        // showSelectedLabels: false,
+        // showUnselectedLabels: false,
         currentIndex: currentIndex,
         onTap: (index) => setState(() => currentIndex = index),
         items: const [
           BottomNavigationBarItem(
-              label: 'Favorite', icon: Icon(Icons.favorite)),
+              label: 'Favorites', icon: Icon(Icons.favorite)),
           BottomNavigationBarItem(label: 'Search', icon: Icon(Icons.search)),
           BottomNavigationBarItem(
               label: 'Trends', icon: Icon(Icons.trending_up)),
         ],
       ),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
-      // floatingActionButton: FloatingActionButton.small(
-      //   onPressed: () {
-      //     dispose();
-      //     SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-      //   },
-      //   child: const Icon(Icons.exit_to_app),
-      // ),
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterFloat,
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () {
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        },
+        child: const Icon(Icons.exit_to_app),
+      ),
     );
   }
 }

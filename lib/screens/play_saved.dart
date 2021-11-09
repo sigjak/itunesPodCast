@@ -152,7 +152,7 @@ class _PlaySavedState extends State<PlaySaved> with WidgetsBindingObserver {
           (position, bufferedPosition, duration) => PositionData(
               position, bufferedPosition, duration ?? Duration.zero));
   String dateToString(DateTime dt) {
-    DateFormat dateFormat = DateFormat('dd-MM-yyyy');
+    DateFormat dateFormat = DateFormat('dd-MMM-yyyy');
     return 'Release date: ${dateFormat.format(dt)}';
   }
 

@@ -194,13 +194,6 @@ class _SearchScreenState extends State<SearchScreen> {
               )
             : const SliverToBoxAdapter(child: SizedBox()),
       ]),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        },
-        child: const Icon(Icons.exit_to_app),
-      ),
     );
   }
 }

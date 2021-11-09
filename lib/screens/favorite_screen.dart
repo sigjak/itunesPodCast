@@ -252,13 +252,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 )),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        },
-        child: const Icon(Icons.exit_to_app),
-      ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
+      // floatingActionButton: FloatingActionButton.small(
+      //   onPressed: () {
+      //     SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+      //   },
+      //   child: const Icon(Icons.exit_to_app),
+      //),
     );
   }
 }

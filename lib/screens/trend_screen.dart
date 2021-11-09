@@ -78,6 +78,7 @@ class _TrendScreenState extends State<TrendScreen> {
   ];
   String trendName = '';
   String currentItunesId = '';
+  String currentPodcastName = '';
   bool isLoading = true;
   int isSelected = 0;
 
@@ -123,6 +124,7 @@ class _TrendScreenState extends State<TrendScreen> {
     }
     setState(() {
       description = trend.description;
+      currentPodcastName = trend.collectionName!;
       isDescription = true;
     });
   }
@@ -170,22 +172,22 @@ class _TrendScreenState extends State<TrendScreen> {
                               itemCount: trendData.length,
                               itemBuilder: (context, index) {
                                 final trend = trendData[index];
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 4),
-                                  child: SizedBox(
-                                    width: 100,
-                                    child: GestureDetector(
-                                      onTap: () async {
-                                        print(trend.collectionId);
-                                        setState(() {
-                                          isDescription = false;
-                                          isSelected = index;
-                                          currentItunesId =
-                                              trend.collectionId.toString();
-                                        });
-                                        getDescription(trend);
-                                      },
+                                return SizedBox(
+                                  width: 100,
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      print(trend.collectionId);
+                                      setState(() {
+                                        isDescription = false;
+                                        isSelected = index;
+                                        currentPodcastName =
+                                            trend.collectionName!;
+                                        currentItunesId =
+                                            trend.collectionId.toString();
+                                      });
+                                      getDescription(trend);
+                                    },
+                                    child: Card(
                                       child: Stack(children: [
                                         CachedNetworkImage(
                                           width: 100,
@@ -216,20 +218,26 @@ class _TrendScreenState extends State<TrendScreen> {
                       ? Container(
                           padding: const EdgeInsets.only(left: 20),
                           constraints: const BoxConstraints(maxHeight: 150),
-                          child: SingleChildScrollView(
-                            child: ListTile(
-                              title: Text(description),
-                              trailing: IconButton(
-                                onPressed: () async {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => AudioScreen(
-                                              itunesId: currentItunesId)));
-                                  ;
-                                },
-                                icon: const Icon(Icons.podcasts,
-                                    size: 32, color: Colors.amberAccent),
+                          child: Card(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(12),
+                              child: ListTile(
+                                title: Text(
+                                  currentPodcastName,
+                                  textAlign: TextAlign.center,
+                                ),
+                                subtitle: Text(description),
+                                trailing: IconButton(
+                                  onPressed: () async {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => AudioScreen(
+                                                itunesId: currentItunesId)));
+                                  },
+                                  icon: const Icon(Icons.podcasts,
+                                      size: 32, color: Colors.amberAccent),
+                                ),
                               ),
                             ),
                           ),
