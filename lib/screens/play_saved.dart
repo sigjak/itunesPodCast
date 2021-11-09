@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:itunes_pod/providers/episode_provider.dart';
-import 'package:itunes_pod/services/save_service.dart';
+
 import 'package:itunes_pod/sql/episode_favorite_model.dart';
-import 'package:itunes_pod/sql/podcasts_favorite_model.dart';
+
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_session/audio_session.dart';
@@ -35,7 +34,7 @@ class _PlaySavedState extends State<PlaySaved> with WidgetsBindingObserver {
   AudioPlayer player = AudioPlayer();
   bool isLoaded = false;
   bool isSelected = false;
-  bool isFavorite = false;
+  // bool isFavorite = false;
   int? tappedIndex;
   String episodeName = '';
 
@@ -46,31 +45,10 @@ class _PlaySavedState extends State<PlaySaved> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
-    // var dd = context.read<PodcastServices>();
 
-    // context.read<ItunesEpisodes>().getEpisodes(widget.itunesId).then((value) {
-    // if (!widget.isSaved) {
-    //   episodes = context.read<ItunesEpisodes>().episodeList;
-    //   podcastImage = episodes[0].artworkUrl600 ?? '';
-    //   itunesPodcastId = int.parse(widget.itunesId);
-    //   isLoaded = true;
-    // } else {
     getSavedData();
 
-    setState(() {
-      //podcastName = episodes[0].collectionName ?? '';
-      // podcastImage = episodes[0].artworkUrl600 ?? '';
-      // itunesPodcastId = int.parse(widget.itunesId);
-      // isLoaded = true;
-    });
-    // dd.checkIfPodcastInDB(widget.podcastName).then((value) {
-    //   if (value) {
-    //     setState(() {
-    //       isFavorite = true;
-    //     });
-    //   }
-    // });
-    // });
+    //setState(() {});
 
     super.initState();
   }
@@ -317,8 +295,11 @@ class _PlaySavedState extends State<PlaySaved> with WidgetsBindingObserver {
                               actions: [
                                 IconSlideAction(
                                   caption: 'Delete episode',
-                                  icon: Icons.delete,
-                                  color: Colors.grey,
+                                  iconWidget: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  color: Colors.grey[800],
                                   onTap: () async {
                                     File targetFile = File(episode.episodeUrl!);
                                     if (targetFile.existsSync()) {

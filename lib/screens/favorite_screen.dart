@@ -4,9 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:itunes_pod/screens/favs.dart';
+
 import 'package:itunes_pod/screens/play_saved.dart';
-import 'package:just_audio/just_audio.dart';
 
 import 'package:provider/provider.dart';
 import './audio_screen.dart';
@@ -27,7 +26,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   List<EpisFavorite> allFavoriteEpisodes = [];
   bool isLoaded = false;
   // bool isEpisodes = false;
-  AudioPlayer player = AudioPlayer();
+  // AudioPlayer player = AudioPlayer();
 
   @override
   void initState() {
@@ -256,7 +255,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndDocked,
       floatingActionButton: FloatingActionButton.small(
         onPressed: () {
-          player.dispose();
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         },
         child: const Icon(Icons.exit_to_app),

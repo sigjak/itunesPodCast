@@ -314,6 +314,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                 IconSlideAction(
                                   caption: 'Save episode',
                                   icon: Icons.download,
+                                  color: Colors.grey[800],
                                   onTap: () async {
                                     showDloadIndicator(context, episode);
                                     await saveEpisode(episode);

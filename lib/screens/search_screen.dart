@@ -15,7 +15,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   bool startSearch = false;
-  bool playerPlaying = false;
+  // bool playerPlaying = false;
   final textController = TextEditingController();
   List<PodResult> dataSearch = [];
   final ScrollController _scrollController = ScrollController();
@@ -174,9 +174,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                       _scrollController.animateTo(0,
                                           duration: const Duration(seconds: 2),
                                           curve: Curves.easeInOutCirc);
-                                      setState(() {
-                                        playerPlaying = playResult;
-                                      });
+                                      // setState(() {
+                                      //   playerPlaying = playResult;
+                                      // });
                                     },
                                     icon: const Icon(
                                       Icons.podcasts,
