@@ -83,11 +83,11 @@ class _TrendScreenState extends State<TrendScreen> {
   bool isDescription = false;
   String descr = '';
 
-  late ScrollController _scrollController;
+  // late ScrollController _scrollController;
   late ScrollController _trendScrollController;
   @override
   void initState() {
-    _scrollController = ScrollController();
+    //_scrollController = ScrollController();
     _trendScrollController = ScrollController();
     getTrendData('1301', 'Arts');
     super.initState();
@@ -113,7 +113,7 @@ class _TrendScreenState extends State<TrendScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    // _scrollController.dispose();
     _trendScrollController.dispose();
     super.dispose();
     player.dispose();
