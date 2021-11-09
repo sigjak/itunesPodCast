@@ -2,14 +2,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:itunes_pod/providers/search_provider.dart';
+import 'package:itunes_pod/screens/audio_screen.dart';
 import 'package:provider/provider.dart';
 //import 'package:intl/intl.dart';
-import 'package:just_audio/just_audio.dart';
+// import 'package:just_audio/just_audio.dart';
 import '../models/itunes_trend.dart';
-import '../models/itunes_episodes.dart';
+//import '../models/itunes_episodes.dart';
 import '../providers/trend_provider.dart';
 //import './audio_screen.dart';
-import '../providers/episode_provider.dart';
+//import '../providers/episode_provider.dart';
 
 class TrendScreen extends StatefulWidget {
   const TrendScreen({Key? key}) : super(key: key);
@@ -19,9 +20,8 @@ class TrendScreen extends StatefulWidget {
 }
 
 class _TrendScreenState extends State<TrendScreen> {
-  AudioPlayer player = AudioPlayer();
   List<Result> trendData = [];
-//  List<Episode> episodes = [];
+
   List<String> categoryList = [
     'Arts',
     'Books',
@@ -77,21 +77,20 @@ class _TrendScreenState extends State<TrendScreen> {
     false,
   ];
   String trendName = '';
+  String currentItunesId = '';
   bool isLoading = true;
-  // bool isEpisodes = false;
-  //bool isPlayer = false;
-  bool isDescription = false;
-  String descr = '';
+  int isSelected = 0;
 
-  // late ScrollController _scrollController;
+  bool isFirstTime = true;
+  bool isDescription = true;
+  String description = '';
+
   late ScrollController _trendScrollController;
   @override
   void initState() {
-    //_scrollController = ScrollController();
     _trendScrollController = ScrollController();
     getTrendData('1301', 'Arts');
     super.initState();
-    print('ho');
   }
 
   getTrendData(String trendId, String name) {
@@ -99,24 +98,33 @@ class _TrendScreenState extends State<TrendScreen> {
       setState(() {
         trendData = context.read<Trends>().trendList;
         isLoading = false;
-        //     isPlayer = false;
+        isSelected = 0;
+        getDescription(trendData[0]);
         trendName = name;
       });
     });
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   episodes = context.watch<ItunesEpisodes>().episodeList;
-  // }
+  static String stripHtmlIfNeeded(String text) {
+    return text.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), ' ');
+  }
 
   @override
   void dispose() {
-    // _scrollController.dispose();
     _trendScrollController.dispose();
     super.dispose();
-    player.dispose();
+  }
+
+  Future<void> getDescription(trend) async {
+    if (trend.description.isEmpty) {
+      String descr =
+          await context.read<SearchByName>().getDescription(trend.feedUrl);
+      trend.description = stripHtmlIfNeeded(descr);
+    }
+    setState(() {
+      description = trend.description;
+      isDescription = true;
+    });
   }
 
   @override
@@ -151,7 +159,7 @@ class _TrendScreenState extends State<TrendScreen> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SizedBox(
-                    height: 120,
+                    height: 100,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -162,24 +170,38 @@ class _TrendScreenState extends State<TrendScreen> {
                               itemCount: trendData.length,
                               itemBuilder: (context, index) {
                                 final trend = trendData[index];
-                                return SizedBox(
-                                  width: 110,
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      setState(() {
-                                        isDescription = false;
-                                      });
-                                      String d = await context
-                                          .read<SearchByName>()
-                                          .getDescription(trend.feedUrl);
-
-                                      setState(() {
-                                        descr = d;
-                                        isDescription = true;
-                                      });
-                                    },
-                                    child: CachedNetworkImage(
-                                      imageUrl: trend.artworkUrl100!,
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  child: SizedBox(
+                                    width: 100,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        print(trend.collectionId);
+                                        setState(() {
+                                          isDescription = false;
+                                          isSelected = index;
+                                          currentItunesId =
+                                              trend.collectionId.toString();
+                                        });
+                                        getDescription(trend);
+                                      },
+                                      child: Stack(children: [
+                                        CachedNetworkImage(
+                                          width: 100,
+                                          imageUrl: trend.artworkUrl100!,
+                                        ),
+                                        isSelected == index
+                                            ? const Positioned(
+                                                bottom: 25,
+                                                right: 15,
+                                                child: Icon(
+                                                  Icons.check_circle_outline,
+                                                  size: 50,
+                                                  color: Colors.amberAccent,
+                                                ))
+                                            : const SizedBox()
+                                      ]),
                                     ),
                                   ),
                                 );
@@ -189,11 +211,31 @@ class _TrendScreenState extends State<TrendScreen> {
                     ),
                   ),
                 ),
-                isDescription
-                    ? Container(
-                        child: Text(descr),
-                      )
-                    : CircularProgressIndicator()
+                Center(
+                  child: isDescription
+                      ? Container(
+                          padding: const EdgeInsets.only(left: 20),
+                          constraints: const BoxConstraints(maxHeight: 150),
+                          child: SingleChildScrollView(
+                            child: ListTile(
+                              title: Text(description),
+                              trailing: IconButton(
+                                onPressed: () async {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AudioScreen(
+                                              itunesId: currentItunesId)));
+                                  ;
+                                },
+                                icon: const Icon(Icons.podcasts,
+                                    size: 32, color: Colors.amberAccent),
+                              ),
+                            ),
+                          ),
+                        )
+                      : const CircularProgressIndicator(),
+                )
               ],
             ),
     );

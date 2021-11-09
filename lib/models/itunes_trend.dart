@@ -50,6 +50,7 @@ class Result {
     this.genres,
     this.artistId,
     this.artistViewUrl,
+    this.description = '',
   });
 
   int? collectionId;
@@ -64,6 +65,7 @@ class Result {
   String? artworkUrl60;
   String? artworkUrl100;
   String? artistName;
+  String description;
   DateTime? releaseDate;
 
   int? trackCount;
