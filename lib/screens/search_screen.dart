@@ -155,14 +155,14 @@ class _SearchScreenState extends State<SearchScreen> {
                                       child: SingleChildScrollView(
                                         child: Text(
                                           podcast.description,
-                                          style: const TextStyle(fontSize: 14),
+                                          style: const TextStyle(fontSize: 10),
                                         ),
                                       ),
                                     ),
                                   ),
                                   trailing: IconButton(
-                                    onPressed: () async {
-                                      bool playResult = await Navigator.push(
+                                    onPressed: () {
+                                      Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => AudioScreen(

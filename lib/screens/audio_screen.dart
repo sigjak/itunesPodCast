@@ -303,7 +303,10 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                               )
                                             ],
                                           ),
-                                          Text(episode.description ?? ''),
+                                          Text(
+                                            episode.description ?? '',
+                                            style: TextStyle(fontSize: 10),
+                                          ),
                                         ],
                                       ),
                                     ),

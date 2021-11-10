@@ -1,4 +1,3 @@
-// ignore_for_file: avoid_print
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:itunes_pod/providers/search_provider.dart';
@@ -125,6 +124,7 @@ class _TrendScreenState extends State<TrendScreen> {
     setState(() {
       description = trend.description;
       currentPodcastName = trend.collectionName!;
+      currentItunesId = trend.collectionId.toString();
       isDescription = true;
     });
   }
@@ -176,7 +176,6 @@ class _TrendScreenState extends State<TrendScreen> {
                                   width: 100,
                                   child: GestureDetector(
                                     onTap: () async {
-                                      print(trend.collectionId);
                                       setState(() {
                                         isDescription = false;
                                         isSelected = index;
@@ -195,8 +194,8 @@ class _TrendScreenState extends State<TrendScreen> {
                                         ),
                                         isSelected == index
                                             ? const Positioned(
-                                                bottom: 25,
-                                                right: 15,
+                                                bottom: 5,
+                                                right: 5,
                                                 child: Icon(
                                                   Icons.check_circle_outline,
                                                   size: 50,
@@ -226,7 +225,10 @@ class _TrendScreenState extends State<TrendScreen> {
                                   currentPodcastName,
                                   textAlign: TextAlign.center,
                                 ),
-                                subtitle: Text(description),
+                                subtitle: Text(
+                                  description,
+                                  style: TextStyle(fontSize: 10),
+                                ),
                                 trailing: IconButton(
                                   onPressed: () async {
                                     Navigator.push(
