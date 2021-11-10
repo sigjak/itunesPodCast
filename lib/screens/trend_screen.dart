@@ -215,30 +215,28 @@ class _TrendScreenState extends State<TrendScreen> {
                 Center(
                   child: isDescription
                       ? Container(
-                          padding: const EdgeInsets.only(left: 20),
+                          padding: const EdgeInsets.all(8),
                           constraints: const BoxConstraints(maxHeight: 150),
                           child: Card(
                             child: SingleChildScrollView(
                               padding: const EdgeInsets.all(12),
-                              child: ListTile(
-                                title: Text(
-                                  currentPodcastName,
-                                  textAlign: TextAlign.center,
-                                ),
-                                subtitle: Text(
-                                  description,
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                trailing: IconButton(
-                                  onPressed: () async {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => AudioScreen(
-                                                itunesId: currentItunesId)));
-                                  },
-                                  icon: const Icon(Icons.podcasts,
-                                      size: 32, color: Colors.amberAccent),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AudioScreen(
+                                              itunesId: currentItunesId)));
+                                },
+                                child: ListTile(
+                                  title: Text(
+                                    currentPodcastName,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  subtitle: Text(
+                                    description,
+                                    style: TextStyle(fontSize: 10),
+                                  ),
                                 ),
                               ),
                             ),

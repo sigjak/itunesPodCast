@@ -103,12 +103,12 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
         children: [
           Icon(
             messIcon,
-            size: 50,
+            size: 32,
             color: Colors.red,
           ),
           Text(
             errorText,
-            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           )
         ],
       ),
