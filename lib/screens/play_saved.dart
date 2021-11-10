@@ -287,7 +287,8 @@ class _PlaySavedState extends State<PlaySaved> with WidgetsBindingObserver {
                                           ),
                                           Text(
                                             episode.description ?? '',
-                                            style: TextStyle(fontSize: 10),
+                                            style:
+                                                const TextStyle(fontSize: 10),
                                           ),
                                         ],
                                       ),

@@ -235,7 +235,7 @@ class _TrendScreenState extends State<TrendScreen> {
                                   ),
                                   subtitle: Text(
                                     description,
-                                    style: TextStyle(fontSize: 10),
+                                    style: const TextStyle(fontSize: 10),
                                   ),
                                 ),
                               ),

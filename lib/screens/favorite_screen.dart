@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+//import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:itunes_pod/screens/play_saved.dart';
@@ -86,7 +86,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 String path = await context
                     .read<SaveService>()
                     .getDirPath(podcast.podcastName);
-                print(path);
+
                 final dir = Directory(path);
                 dir.deleteSync(recursive: true);
 
@@ -171,7 +171,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                                     'Nothing saved!',
                                                     textAlign: TextAlign.center,
                                                     style:
-                                                        TextStyle(fontSize: 30),
+                                                        TextStyle(fontSize: 20),
                                                   ),
                                                   behavior: SnackBarBehavior
                                                       .floating));

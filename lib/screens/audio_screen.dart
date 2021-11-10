@@ -96,10 +96,11 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
 
   SnackBar snack(IconData messIcon, String errorText) {
     return SnackBar(
+      width: 1000,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
       content: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Icon(
             messIcon,
@@ -345,7 +346,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
 
   Future<dynamic> showDloadIndicator(BuildContext context, Episode episode) {
     return showDialog(
-        barrierDismissible: false,
+        barrierDismissible: true,
         context: context,
         builder: (BuildContext context) {
           //dialogContext = context;

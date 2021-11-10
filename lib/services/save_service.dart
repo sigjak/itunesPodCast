@@ -43,6 +43,7 @@ class SaveService with ChangeNotifier {
     String baseDirPath = await getSdPath();
     // print(baseDirPath);
     // print(baseDirPath + '/Podcasts/$podcastName');
+    podcastName = podcastName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
     final Directory dir = Directory('$baseDirPath/Podcasts/$podcastName');
     if (await dir.exists()) {
       return dir.path;
@@ -53,6 +54,9 @@ class SaveService with ChangeNotifier {
   }
 
   Future<String> downloadLocation(String podcastName, episodeTitle) async {
+    //clean podcastName
+
+    podcastName = podcastName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
     String cleanTitle =
         episodeTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
     String cleanerTitle = cleanTitle.replaceAll(RegExp('\\s+'), '');
