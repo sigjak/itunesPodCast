@@ -86,6 +86,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 String path = await context
                     .read<SaveService>()
                     .getDirPath(podcast.podcastName);
+                print(path);
                 final dir = Directory(path);
                 dir.deleteSync(recursive: true);
 
