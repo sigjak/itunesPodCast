@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/cupertino.dart';
 import 'package:xml/xml.dart';
 import '../models/itunes_search_by_name.dart';

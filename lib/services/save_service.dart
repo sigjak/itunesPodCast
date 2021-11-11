@@ -55,7 +55,6 @@ class SaveService with ChangeNotifier {
 
   Future<String> downloadLocation(String podcastName, episodeTitle) async {
     //clean podcastName
-
     podcastName = podcastName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
     String cleanTitle =
         episodeTitle.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
@@ -94,7 +93,7 @@ class SaveService with ChangeNotifier {
 
     Directory dir = Directory(path);
     dir.list(recursive: false).forEach((element) {
-      print(element);
+      //print(element);
     });
   }
 }

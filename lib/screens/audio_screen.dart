@@ -96,7 +96,6 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
 
   SnackBar snack(IconData messIcon, String errorText) {
     return SnackBar(
-      width: 1000,
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(16),
       content: Row(
@@ -306,7 +305,8 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                           ),
                                           Text(
                                             episode.description ?? '',
-                                            style: TextStyle(fontSize: 10),
+                                            style:
+                                                const TextStyle(fontSize: 10),
                                           ),
                                         ],
                                       ),
@@ -321,8 +321,12 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
                                   color: Colors.grey[800],
                                   onTap: () async {
                                     showDloadIndicator(context, episode);
+
                                     await saveEpisode(episode);
                                     Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        snack(Icons.check,
+                                            'Episode downloaded!'));
                                   },
                                 )
                               ],
@@ -337,6 +341,9 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
         floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
         floatingActionButton: FloatingActionButton.small(
           onPressed: () {
+            if (player.position > const Duration(minutes: 2)) {
+              posService.savePosition(episodeName, player.position);
+            }
             player.dispose();
             SystemChannels.platform.invokeMethod('SystemNavigator.pop');
           },

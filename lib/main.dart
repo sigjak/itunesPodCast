@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:itunes_pod/providers/search_provider.dart';
-import 'package:itunes_pod/screens/bottom_nav_screen.dart';
+//import 'package:itunes_pod/screens/bottom_nav_screen.dart';
+import 'package:itunes_pod/screens/init_page.dart';
 import 'package:itunes_pod/services/save_service.dart';
 import 'package:itunes_pod/sql/podcast_sql_services.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -38,7 +39,8 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.grey,
       ),
-      home: const BottomNav(),
+      //  home: const BottomNav(),
+      home: const InitScreen(),
     );
   }
 }
