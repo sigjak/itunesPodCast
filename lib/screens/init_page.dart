@@ -24,7 +24,7 @@ class _InitScreenState extends State<InitScreen> {
       final result = await InternetAddress.lookup('google.com');
 
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const BottomNav()),
         );
@@ -38,7 +38,7 @@ class _InitScreenState extends State<InitScreen> {
 
   Future<void> connCheck() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    print(connectivityResult);
+
     if (connectivityResult == ConnectivityResult.mobile) {
       checkNet();
     } else if (connectivityResult == ConnectivityResult.wifi) {
@@ -53,11 +53,13 @@ class _InitScreenState extends State<InitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Center(
-        child: Text(
-          'No Connection!',
-          style: TextStyle(fontSize: 45, color: Colors.red),
-        ),
+      body: Center(
+        child: isConnected
+            ? const CircularProgressIndicator()
+            : const Text(
+                'No Internet!',
+                style: TextStyle(fontSize: 45, color: Colors.red),
+              ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
       floatingActionButton: FloatingActionButton.small(

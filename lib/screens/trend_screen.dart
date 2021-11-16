@@ -191,6 +191,9 @@ class _TrendScreenState extends State<TrendScreen> {
                                         CachedNetworkImage(
                                           width: 100,
                                           imageUrl: trend.artworkUrl100!,
+                                          errorWidget: (context, url, error) =>
+                                              Image.asset(
+                                                  'assets/images/dd.png'),
                                         ),
                                         isSelected == index
                                             ? const Positioned(

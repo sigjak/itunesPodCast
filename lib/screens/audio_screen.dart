@@ -353,7 +353,7 @@ class _AudioScreenState extends State<AudioScreen> with WidgetsBindingObserver {
 
   Future<dynamic> showDloadIndicator(BuildContext context, Episode episode) {
     return showDialog(
-        barrierDismissible: true,
+        barrierDismissible: false,
         context: context,
         builder: (BuildContext context) {
           //dialogContext = context;

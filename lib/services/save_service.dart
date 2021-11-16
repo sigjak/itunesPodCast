@@ -23,7 +23,14 @@ class SaveService with ChangeNotifier {
     final status = await Permission.manageExternalStorage.request();
     if (status.isGranted) {
       List<Directory>? extList = await getExternalStorageDirectories();
-      List<String> splitList = extList![1].path.split('/');
+      //  List<String> splitList = extList![1].path.split('/');
+      List<String> splitList = [];
+      if (extList!.length == 2) {
+        splitList = extList[1].path.split('/');
+      } else {
+        splitList = extList[0].path.split('/');
+      }
+
       String sdPath = '';
       for (int i = 1; i < splitList.length; i++) {
         if (splitList[i] == 'Android') break;
